@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>外科專科考古題互動複習系統</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
@@ -313,7 +313,7 @@ body {
 /* STICKY NOTE */
 #sticky-note-area { border-top: 1px solid var(--border); padding: 16px; background: #fffef0; display: flex; gap: 10px; align-items: flex-start; }
 #sticky-note-area .sticky-icon { font-size: 22px; }
-#note-textarea { flex: 1; border: 1.5px solid #fbd38d; border-radius: var(--radius-sm); padding: 10px; font-family: 'Noto Sans TC', sans-serif; font-size: 13px; resize: vertical; min-height: 70px; background: #fffff0; outline: none; color: var(--text); transition: border-color var(--transition); }
+#note-textarea { flex: 1; border: 1.5px solid #fbd38d; border-radius: var(--radius-sm); padding: 10px; font-family: 'Noto Sans TC', sans-serif; font-size: 16px; resize: vertical; min-height: 70px; background: #fffff0; outline: none; color: var(--text); transition: border-color var(--transition); }
 #note-textarea:focus { border-color: #d69e2e; }
 .note-actions { display: flex; flex-direction: column; gap: 6px; }
 /* BOTTOM ACTIONS */
@@ -1440,15 +1440,18 @@ body {
 </div>
 
 <!-- CAT SORT MODAL -->
-<div id="cat-sort-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:13000;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#fff;border-radius:14px;padding:24px;max-width:380px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.18);animation:slideUp .2s ease">
-    <h3 style="font-size:16px;font-weight:700;color:#1e3a5f;margin-bottom:6px">⇅ 調整科別順序</h3>
-    <p style="font-size:12px;color:#64748b;margin-bottom:14px">拖拉項目調整顯示順序</p>
-    <div id="cat-sort-list" style="display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;padding-right:4px"></div>
-    <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
-      <button onclick="resetCatOrder()" style="padding:7px 14px;border:2px solid #e2e8f0;border-radius:9px;background:#f8fafc;font-family:'Noto Sans TC',sans-serif;font-size:13px;cursor:pointer;color:#64748b">↩ 重設</button>
-      <button onclick="closeCatSortModal()" style="padding:7px 14px;border:none;border-radius:9px;background:#64748b;color:#fff;font-family:'Noto Sans TC',sans-serif;font-size:13px;cursor:pointer">取消</button>
-      <button onclick="saveCatOrder()" style="padding:7px 18px;border:none;border-radius:9px;background:#2b7de9;color:#fff;font-family:'Noto Sans TC',sans-serif;font-size:13px;font-weight:600;cursor:pointer">💾 套用</button>
+<div id="cat-sort-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:13000;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:480px;box-shadow:0 -8px 32px rgba(0,0,0,0.18);animation:slideUp .25s ease;max-height:90vh;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <h3 style="font-size:16px;font-weight:700;color:#1e3a5f">⇅ 調整科別順序</h3>
+      <button onclick="closeCatSortModal()" style="background:none;border:none;font-size:20px;color:#94a3b8;cursor:pointer">✕</button>
+    </div>
+    <p style="font-size:12px;color:#64748b;margin-bottom:12px">長按拖拉調整順序，或使用上下箭頭</p>
+    <div id="cat-sort-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding:2px 2px 8px;-webkit-overflow-scrolling:touch"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0">
+      <button onclick="resetCatOrder()" style="padding:9px 14px;border:2px solid #e2e8f0;border-radius:9px;background:#f8fafc;font-family:'Noto Sans TC',sans-serif;font-size:13px;cursor:pointer;color:#64748b">↩ 重設</button>
+      <button onclick="closeCatSortModal()" style="padding:9px 14px;border:none;border-radius:9px;background:#718096;color:#fff;font-family:'Noto Sans TC',sans-serif;font-size:13px;cursor:pointer">取消</button>
+      <button onclick="saveCatOrder()" style="flex:1;padding:9px 18px;border:none;border-radius:9px;background:#2b7de9;color:#fff;font-family:'Noto Sans TC',sans-serif;font-size:13px;font-weight:600;cursor:pointer">💾 套用</button>
     </div>
   </div>
 </div>
@@ -1577,11 +1580,16 @@ function getRecord(qId) {
 }
 
 // ===================== CATEGORY / YEAR SELECT =====================
-let catCustomOrder = JSON.parse(localStorage.getItem('catCustomOrder') || 'null') || [];
+const DEFAULT_CAT_ORDER = [
+  '外科基礎','外科營養','外科重症加護','消化外科','內分泌外科',
+  '肝膽胰外科','內視鏡外科','大腸直腸外科','心臟外科','血管外科',
+  '神經外科','胸腔外科','整形外科','乳房外科','小兒外科',
+  '泌尿科','外傷科','腫瘤外科含鏢靶治療','器官移植','麻醉科','骨科'
+];
+let catCustomOrder = JSON.parse(localStorage.getItem('catCustomOrder') || 'null') || DEFAULT_CAT_ORDER;
 
 function openCatSortModal() {
   const allCats = [...new Set(quizData.map(q => q.category).filter(Boolean))];
-  // Merge: keep custom order for existing, append new ones at end
   const ordered = [
     ...catCustomOrder.filter(c => allCats.includes(c)),
     ...allCats.filter(c => !catCustomOrder.includes(c))
@@ -1589,16 +1597,30 @@ function openCatSortModal() {
   const list = document.getElementById('cat-sort-list');
   list.innerHTML = ordered.map((c, i) => `
     <div class="cat-sort-item" draggable="true" data-cat="${c}" style="
-      display:flex;align-items:center;gap:10px;padding:9px 12px;
+      display:flex;align-items:center;gap:8px;padding:10px 12px;
       background:#f8fafc;border:2px solid #e2e8f0;border-radius:9px;
-      cursor:grab;user-select:none;transition:all .15s ease;font-size:14px;
+      user-select:none;transition:all .15s ease;font-size:14px;touch-action:none;
     ">
-      <span style="color:#94a3b8;font-size:16px;flex-shrink:0">☰</span>
+      <span style="color:#94a3b8;font-size:18px;flex-shrink:0;cursor:grab">☰</span>
       <span style="flex:1;color:#1a202c">${c}</span>
-      <span style="font-size:11px;color:#94a3b8">${quizData.filter(q=>q.category===c).length} 題</span>
+      <span style="font-size:11px;color:#94a3b8;margin-right:4px">${quizData.filter(q=>q.category===c).length} 題</span>
+      <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">
+        <button onclick="moveCatItem(this,'up')" style="width:24px;height:22px;border:1px solid #e2e8f0;border-radius:4px;background:#fff;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:#64748b">▲</button>
+        <button onclick="moveCatItem(this,'down')" style="width:24px;height:22px;border:1px solid #e2e8f0;border-radius:4px;background:#fff;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:#64748b">▼</button>
+      </div>
     </div>`).join('');
   initDragSort(list);
   document.getElementById('cat-sort-modal').style.display = 'flex';
+}
+
+function moveCatItem(btn, dir) {
+  const item = btn.closest('.cat-sort-item');
+  const list = item.parentElement;
+  if (dir === 'up' && item.previousElementSibling) {
+    list.insertBefore(item, item.previousElementSibling);
+  } else if (dir === 'down' && item.nextElementSibling) {
+    list.insertBefore(item.nextElementSibling, item);
+  }
 }
 
 function initDragSort(list) {
@@ -1619,42 +1641,50 @@ function initDragSort(list) {
       list.querySelectorAll('.cat-sort-item').forEach(i => i.style.borderColor = '#e2e8f0');
       item.style.borderColor = '#2b7de9';
       const rect = item.getBoundingClientRect();
-      const mid = rect.top + rect.height / 2;
-      if (e.clientY < mid) list.insertBefore(dragging, item);
+      if (e.clientY < rect.top + rect.height / 2) list.insertBefore(dragging, item);
       else list.insertBefore(dragging, item.nextSibling);
     });
-    item.addEventListener('touchstart', handleTouchStart, { passive: true });
+    item.addEventListener('touchstart', handleTouchStart, { passive: false });
     item.addEventListener('touchmove', handleTouchMove, { passive: false });
     item.addEventListener('touchend', handleTouchEnd);
   });
 }
 
-let touchItem = null, touchClone = null, touchOffsetY = 0;
+let touchItem = null, touchClone = null, touchOffsetY = 0, touchStartY = 0;
+
 function handleTouchStart(e) {
+  // 如果點的是箭頭按鈕則不觸發拖拉
+  if (e.target.tagName === 'BUTTON') return;
+  touchStartY = e.touches[0].clientY;
   touchItem = this;
   const rect = this.getBoundingClientRect();
   touchOffsetY = e.touches[0].clientY - rect.top;
   touchClone = this.cloneNode(true);
-  touchClone.style.cssText = `position:fixed;left:${rect.left}px;width:${rect.width}px;opacity:0.8;z-index:99999;pointer-events:none;border-radius:9px;background:#ebf8ff;border:2px solid #2b7de9;`;
+  touchClone.style.cssText = `position:fixed;left:${rect.left}px;width:${rect.width}px;top:${rect.top}px;opacity:0.85;z-index:99999;pointer-events:none;border-radius:9px;background:#ebf8ff;border:2px solid #2b7de9;transition:none;`;
   document.body.appendChild(touchClone);
   this.style.opacity = '0.3';
+  e.preventDefault();
 }
+
 function handleTouchMove(e) {
   e.preventDefault();
-  if (!touchClone) return;
-  const y = e.touches[0].clientY - touchOffsetY;
-  touchClone.style.top = y + 'px';
+  if (!touchClone || !touchItem) return;
+  const touchY = e.touches[0].clientY;
+  touchClone.style.top = (touchY - touchOffsetY) + 'px';
   const list = document.getElementById('cat-sort-list');
   const items = [...list.querySelectorAll('.cat-sort-item')].filter(i => i !== touchItem);
+  let inserted = false;
   for (const item of items) {
     const rect = item.getBoundingClientRect();
-    if (e.touches[0].clientY < rect.top + rect.height / 2) {
-      list.insertBefore(touchItem, item); break;
-    } else if (item === items[items.length - 1]) {
-      list.appendChild(touchItem);
+    if (touchY < rect.top + rect.height / 2) {
+      list.insertBefore(touchItem, item);
+      inserted = true;
+      break;
     }
   }
+  if (!inserted) list.appendChild(touchItem);
 }
+
 function handleTouchEnd() {
   if (touchClone) { document.body.removeChild(touchClone); touchClone = null; }
   if (touchItem) { touchItem.style.opacity = '1'; touchItem = null; }
@@ -1670,8 +1700,8 @@ function saveCatOrder() {
 }
 
 function resetCatOrder() {
-  catCustomOrder = [];
-  localStorage.removeItem('catCustomOrder');
+  catCustomOrder = [...DEFAULT_CAT_ORDER];
+  localStorage.setItem('catCustomOrder', JSON.stringify(catCustomOrder));
   openCatSortModal();
   showToast('↩ 已重設為預設順序');
 }
