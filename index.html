@@ -1596,20 +1596,18 @@ function openCatSortModal() {
   ];
   const list = document.getElementById('cat-sort-list');
   list.innerHTML = ordered.map((c, i) => `
-    <div class="cat-sort-item" draggable="true" data-cat="${c}" style="
+    <div class="cat-sort-item" data-cat="${c}" style="
       display:flex;align-items:center;gap:8px;padding:10px 12px;
       background:#f8fafc;border:2px solid #e2e8f0;border-radius:9px;
-      user-select:none;transition:all .15s ease;font-size:14px;touch-action:none;
+      user-select:none;font-size:14px;
     ">
-      <span style="color:#94a3b8;font-size:18px;flex-shrink:0;cursor:grab">☰</span>
       <span style="flex:1;color:#1a202c">${c}</span>
       <span style="font-size:11px;color:#94a3b8;margin-right:4px">${quizData.filter(q=>q.category===c).length} 題</span>
       <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">
-        <button onclick="moveCatItem(this,'up')" style="width:24px;height:22px;border:1px solid #e2e8f0;border-radius:4px;background:#fff;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:#64748b">▲</button>
-        <button onclick="moveCatItem(this,'down')" style="width:24px;height:22px;border:1px solid #e2e8f0;border-radius:4px;background:#fff;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:#64748b">▼</button>
+        <button onclick="moveCatItem(this,'up')" style="width:28px;height:24px;border:1px solid #e2e8f0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;color:#64748b">▲</button>
+        <button onclick="moveCatItem(this,'down')" style="width:28px;height:24px;border:1px solid #e2e8f0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;color:#64748b">▼</button>
       </div>
     </div>`).join('');
-  initDragSort(list);
   document.getElementById('cat-sort-modal').style.display = 'flex';
 }
 
@@ -1621,73 +1619,6 @@ function moveCatItem(btn, dir) {
   } else if (dir === 'down' && item.nextElementSibling) {
     list.insertBefore(item.nextElementSibling, item);
   }
-}
-
-function initDragSort(list) {
-  let dragging = null;
-  list.querySelectorAll('.cat-sort-item').forEach(item => {
-    item.addEventListener('dragstart', () => {
-      dragging = item;
-      setTimeout(() => item.style.opacity = '0.4', 0);
-    });
-    item.addEventListener('dragend', () => {
-      item.style.opacity = '1';
-      dragging = null;
-      list.querySelectorAll('.cat-sort-item').forEach(i => i.style.borderColor = '#e2e8f0');
-    });
-    item.addEventListener('dragover', e => {
-      e.preventDefault();
-      if (!dragging || dragging === item) return;
-      list.querySelectorAll('.cat-sort-item').forEach(i => i.style.borderColor = '#e2e8f0');
-      item.style.borderColor = '#2b7de9';
-      const rect = item.getBoundingClientRect();
-      if (e.clientY < rect.top + rect.height / 2) list.insertBefore(dragging, item);
-      else list.insertBefore(dragging, item.nextSibling);
-    });
-    item.addEventListener('touchstart', handleTouchStart, { passive: false });
-    item.addEventListener('touchmove', handleTouchMove, { passive: false });
-    item.addEventListener('touchend', handleTouchEnd);
-  });
-}
-
-let touchItem = null, touchClone = null, touchOffsetY = 0, touchStartY = 0;
-
-function handleTouchStart(e) {
-  // 如果點的是箭頭按鈕則不觸發拖拉
-  if (e.target.tagName === 'BUTTON') return;
-  touchStartY = e.touches[0].clientY;
-  touchItem = this;
-  const rect = this.getBoundingClientRect();
-  touchOffsetY = e.touches[0].clientY - rect.top;
-  touchClone = this.cloneNode(true);
-  touchClone.style.cssText = `position:fixed;left:${rect.left}px;width:${rect.width}px;top:${rect.top}px;opacity:0.85;z-index:99999;pointer-events:none;border-radius:9px;background:#ebf8ff;border:2px solid #2b7de9;transition:none;`;
-  document.body.appendChild(touchClone);
-  this.style.opacity = '0.3';
-  e.preventDefault();
-}
-
-function handleTouchMove(e) {
-  e.preventDefault();
-  if (!touchClone || !touchItem) return;
-  const touchY = e.touches[0].clientY;
-  touchClone.style.top = (touchY - touchOffsetY) + 'px';
-  const list = document.getElementById('cat-sort-list');
-  const items = [...list.querySelectorAll('.cat-sort-item')].filter(i => i !== touchItem);
-  let inserted = false;
-  for (const item of items) {
-    const rect = item.getBoundingClientRect();
-    if (touchY < rect.top + rect.height / 2) {
-      list.insertBefore(touchItem, item);
-      inserted = true;
-      break;
-    }
-  }
-  if (!inserted) list.appendChild(touchItem);
-}
-
-function handleTouchEnd() {
-  if (touchClone) { document.body.removeChild(touchClone); touchClone = null; }
-  if (touchItem) { touchItem.style.opacity = '1'; touchItem = null; }
 }
 
 function saveCatOrder() {
