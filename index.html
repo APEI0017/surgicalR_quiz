@@ -313,7 +313,7 @@ body {
 /* STICKY NOTE */
 #sticky-note-area { border-top: 1px solid var(--border); padding: 16px; background: #fffef0; display: flex; gap: 10px; align-items: flex-start; }
 #sticky-note-area .sticky-icon { font-size: 22px; }
-#note-textarea { flex: 1; border: 1.5px solid #fbd38d; border-radius: var(--radius-sm); padding: 10px; font-family: 'Noto Sans TC', sans-serif; font-size: 16px; resize: vertical; min-height: 70px; background: #fffff0; outline: none; color: var(--text); transition: border-color var(--transition); }
+#note-textarea { flex: 1; border: 1.5px solid #fbd38d; border-radius: var(--radius-sm); padding: 10px; font-family: 'Noto Sans TC', sans-serif; font-size: 16px; resize: none; min-height: 70px; overflow-y: hidden; background: #fffff0; outline: none; color: var(--text); transition: border-color var(--transition); }
 #note-textarea:focus { border-color: #d69e2e; }
 .note-actions { display: flex; flex-direction: column; gap: 6px; }
 /* BOTTOM ACTIONS */
@@ -2058,7 +2058,9 @@ function renderQuestion() {
 
   document.getElementById('reveal-section').style.display = 'block';
   document.getElementById('answer-section').style.display = 'none';
-  document.getElementById('note-textarea').value = r.note || '';
+  const noteTa = document.getElementById('note-textarea');
+  noteTa.value = r.note || '';
+  setTimeout(() => autoResize(noteTa), 0);
   startTimer();
 }
 
@@ -2248,12 +2250,21 @@ function deleteQuestion() {
 }
 
 // ===================== NOTE =====================
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('note-textarea').addEventListener('input', function() {
-    if (!filteredList.length) return;
-    const r = getRecord(filteredList[currentIndex].id);
-    r.note = this.value; saveUserRecords();
-  });
+  const ta = document.getElementById('note-textarea');
+  if (ta) {
+    ta.addEventListener('input', function() {
+      autoResize(this);
+      if (!filteredList.length) return;
+      const r = getRecord(filteredList[currentIndex].id);
+      r.note = this.value; saveUserRecords();
+    });
+  }
 });
 function clearNote() {
   if (!confirm('確定要清空此題筆記？')) return;
@@ -4566,21 +4577,36 @@ function showExamResult() {
     const userStr = r.userAns === null ? '未作答' : (Array.isArray(r.userAns) ? r.userAns.join(', ') : r.userAns);
     let cls = r.isCorrect ? 'correct' : 'wrong';
     if (r.unsure) cls += ' unsure-mark';
+    const userAnsArr = r.userAns === null ? [] : (Array.isArray(r.userAns) ? r.userAns : [r.userAns]);
+    const correctAnsArr = Array.isArray(r.correctAns) ? r.correctAns : [r.correctAns];
+    const optsHtml = (r.q.options || []).map(o => {
+      const lbl = o.match(/^([A-F])\./i)?.[1]?.toUpperCase() || '';
+      const isCorrectOpt = correctAnsArr.includes(lbl);
+      const isUserOpt = userAnsArr.includes(lbl);
+      let bg = '#f8fafc'; let border = '#e2e8f0'; let color = '#374151';
+      if (isCorrectOpt) { bg = '#f0fff4'; border = '#38a169'; color = '#276749'; }
+      if (isUserOpt && !isCorrectOpt) { bg = '#fff5f5'; border = '#fc8181'; color = '#c53030'; }
+      return `<div style="padding:7px 10px;border:1.5px solid ${border};border-radius:7px;background:${bg};font-size:13px;color:${color};margin-bottom:5px">
+        ${isCorrectOpt ? '✅ ' : isUserOpt ? '❌ ' : ''}${escapeHtml(o)}
+      </div>`;
+    }).join('');
     return `<div class="exam-review-item ${cls}">
       <div class="exam-review-qnum">Q${i+1} ${r.isCorrect ? '✅ 正確' : '❌ 錯誤'}${r.unsure ? ' ❓不確定' : ''} — ${r.q.category || ''} ${r.q.year || ''}</div>
       <div class="exam-review-q">${escapeHtml(r.q.question)}</div>
+      <div style="margin-bottom:10px">${optsHtml}</div>
       <div class="exam-review-ans">
         <span style="color:#38a169;font-weight:700">正確答案：${correctStr}</span>
         ${!r.isCorrect ? `　<span style="color:#e53e3e">你的答案：${userStr}</span>` : ''}
       </div>
-      ${r.q.explanation ? `<div class="exam-review-expl">💡 ${escapeHtml(r.q.explanation)}</div>` : ''}
+      ${r.q.explanation ? `<div class="exam-review-expl" style="cursor:pointer" title="點擊複製解析至筆記" onclick="copyExplToExamNote(this,'${r.q.id.replace(/'/g,"\\'")}')">💡 <span style="font-size:11px;color:#63b3ed">（點擊複製至筆記）</span><br>${escapeHtml(r.q.explanation)}</div>` : ''}
       <div style="margin-top:10px">
         <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">📝 個人筆記</div>
         <textarea
           data-qid="${r.q.id}"
           onchange="saveExamNote(this)"
+          oninput="autoResize(this)"
           placeholder="在此輸入筆記，自動同步至個人題庫..."
-          style="width:100%;border:2px solid #fbd38d;border-radius:var(--radius-sm);padding:8px 10px;font-family:'Noto Sans TC',sans-serif;font-size:14px;resize:vertical;min-height:60px;background:#fffff0;outline:none;color:var(--text);transition:border-color var(--transition);"
+          style="width:100%;border:2px solid #fbd38d;border-radius:var(--radius-sm);padding:8px 10px;font-family:'Noto Sans TC',sans-serif;font-size:14px;resize:none;min-height:60px;overflow-y:hidden;background:#fffff0;outline:none;color:var(--text);transition:border-color var(--transition);"
           onfocus="this.style.borderColor='#d69e2e'"
           onblur="this.style.borderColor='#fbd38d'"
         >${escapeHtml(getRecord(r.q.id).note || '')}</textarea>
@@ -4613,6 +4639,23 @@ function markExamWrongConfirm() {
   if (markBtn) { markBtn.textContent = '✅ 已標記'; markBtn.disabled = true; markBtn.style.background = '#718096'; }
 }
 
+function copyExplToExamNote(explEl, qid) {
+  const expl = explEl.innerText.replace(/（點擊複製至筆記）\n?/, '').replace(/^💡\s*/, '').trim();
+  // 找到同一題的筆記 textarea
+  const ta = document.querySelector(`textarea[data-qid="${qid}"]`);
+  if (!ta) return;
+  const r = getRecord(qid);
+  const prefix = ta.value.trim() ? ta.value.trim() + '\n\n' : '';
+  const newNote = prefix + '【解析】\n' + expl;
+  ta.value = newNote;
+  r.note = newNote;
+  saveUserRecords();
+  autoResize(ta);
+  ta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  ta.focus();
+  showToast('📝 解析已複製至筆記');
+}
+
 function saveExamNote(textarea) {
   const qid = textarea.dataset.qid;
   if (!qid) return;
@@ -4628,19 +4671,34 @@ function saveExamNote(textarea) {
 }
 
 function markExamWrongAsAgain(results) {
-  let count = 0;
+  let counts = { again: 0, hard: 0, easy: 0 };
   results.forEach(r => {
+    const rec = getRecord(r.q.id);
     if (!r.isCorrect) {
-      const rec = getRecord(r.q.id);
+      // 答錯（無論有無標記不確定）→ again
       rec.anki = 'again';
       rec.dueDate = Date.now() + 86400000;
-      count++;
+      counts.again++;
+    } else if (r.unsure) {
+      // 標記不確定但答對 → hard
+      rec.anki = 'hard';
+      rec.dueDate = Date.now() + 86400000;
+      counts.hard++;
+    } else {
+      // 無標記不確定且答對 → easy
+      rec.anki = 'easy';
+      rec.dueDate = Date.now() + 14 * 86400000;
+      counts.easy++;
     }
   });
   saveUserRecords();
   renderMatrix();
   renderStats();
-  showToast(`❌ 已將 ${count} 題標記為錯誤（Again）`);
+  const parts = [];
+  if (counts.again) parts.push(`${counts.again} 題→Again`);
+  if (counts.hard)  parts.push(`${counts.hard} 題→Hard`);
+  if (counts.easy)  parts.push(`${counts.easy} 題→Easy`);
+  showToast(`已標記：${parts.join('、')}`);
 }
 
 // 儲存紀錄
@@ -4728,8 +4786,9 @@ function openExamHistory() {
               <textarea
                 data-qid="${d.id}"
                 onchange="saveExamNote(this)"
+                oninput="autoResize(this)"
                 placeholder="在此輸入筆記，自動同步至個人題庫..."
-                style="width:100%;border:2px solid #fbd38d;border-radius:var(--radius-sm);padding:7px 10px;font-family:'Noto Sans TC',sans-serif;font-size:13px;resize:vertical;min-height:54px;background:#fffff0;outline:none;color:var(--text);"
+                style="width:100%;border:2px solid #fbd38d;border-radius:var(--radius-sm);padding:7px 10px;font-family:'Noto Sans TC',sans-serif;font-size:13px;resize:none;min-height:54px;overflow-y:hidden;background:#fffff0;outline:none;color:var(--text);"
                 onfocus="this.style.borderColor='#d69e2e'"
                 onblur="this.style.borderColor='#fbd38d'"
               >${escapeHtml(getRecord(d.id).note || '')}</textarea>
