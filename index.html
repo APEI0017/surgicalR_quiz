@@ -417,6 +417,68 @@ body {
 #dedup-summary { display: none; padding: 20px 24px; text-align: center; }
 #dedup-summary .sum-icon { font-size: 40px; margin-bottom: 10px; }
 #dedup-summary p { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; }
+/* ===================== EXAM MODE ===================== */
+#exam-overlay {
+  display: none; position: fixed; inset: 0; z-index: 16000;
+  background: linear-gradient(160deg, #0d1f3c 0%, #1e3a5f 55%, #1a4a6e 100%);
+  overflow-y: auto;
+}
+#exam-overlay.show { display: block; }
+#exam-app { max-width: 760px; margin: 0 auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 14px; }
+.exam-setup-card { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-md); }
+.exam-setup-card h2 { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 18px; }
+.exam-field { margin-bottom: 16px; }
+.exam-field label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.exam-cat-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+.exam-cat-chip { padding: 5px 12px; border: 2px solid var(--border); border-radius: 20px; font-size: 13px; cursor: pointer; background: #fff; color: var(--text); transition: all 0.15s ease; font-family: 'Noto Sans TC', sans-serif; }
+.exam-cat-chip.selected { background: var(--navy); color: #fff; border-color: var(--navy); }
+.exam-cat-chip.all-chip.selected { background: var(--accent); border-color: var(--accent); }
+.exam-type-row { display: flex; gap: 8px; }
+.exam-type-btn { flex: 1; padding: 9px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; background: #fff; color: var(--text); font-family: 'Noto Sans TC', sans-serif; font-weight: 500; transition: all 0.15s ease; }
+.exam-type-btn.selected { background: var(--navy); color: #fff; border-color: var(--navy); }
+.exam-count-row { display: flex; align-items: center; gap: 12px; }
+.exam-count-row input[type=range] { flex: 1; accent-color: var(--accent); }
+.exam-count-val { font-size: 22px; font-weight: 800; color: var(--accent); min-width: 36px; text-align: center; }
+.exam-qcard { background: var(--card); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow-md); }
+.exam-qheader { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.exam-qnum { font-size: 14px; font-weight: 700; color: var(--navy); }
+.exam-qcat { font-size: 12px; background: #ebf8ff; color: #2c5282; padding: 3px 10px; border-radius: 10px; }
+.exam-unsure { font-size: 12px; background: #fffbeb; color: #92400e; padding: 3px 10px; border-radius: 10px; border: 1px solid #fcd34d; cursor: pointer; margin-left: auto; }
+.exam-unsure.marked { background: #fcd34d; font-weight: 700; }
+.exam-qtext { font-size: 15px; line-height: 1.8; color: var(--text); margin-bottom: 18px; }
+.exam-options { display: flex; flex-direction: column; gap: 8px; }
+.exam-opt { padding: 11px 16px; border: 2px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; color: var(--text); background: #fff; display: flex; align-items: center; gap: 10px; transition: all 0.15s ease; font-family: 'Noto Sans TC', sans-serif; text-align: left; width: 100%; }
+.exam-opt:hover { border-color: var(--accent); background: #eff6ff; }
+.exam-opt.selected { border-color: var(--accent); background: #dbeafe; }
+.exam-opt-label { font-weight: 700; color: var(--accent); min-width: 20px; }
+.exam-nav { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.08); border-radius: var(--radius); padding: 14px 18px; flex-wrap: wrap; }
+.exam-nav-dots { display: flex; gap: 5px; flex: 1; flex-wrap: wrap; }
+.exam-dot { width: 28px; height: 28px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: #fff; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-family: 'JetBrains Mono', monospace; }
+.exam-dot.answered { background: var(--accent); border-color: var(--accent); }
+.exam-dot.unsure { background: #d97706; border-color: #d97706; }
+.exam-dot.current { outline: 3px solid #fff; outline-offset: 1px; }
+.exam-result-header { background: var(--card); border-radius: var(--radius); padding: 24px; text-align: center; box-shadow: var(--shadow-md); }
+.exam-score-big { font-size: 56px; font-weight: 800; color: var(--accent); line-height: 1; }
+.exam-score-sub { font-size: 16px; color: var(--text-muted); margin-top: 4px; }
+.exam-stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 16px; }
+.exam-stat-box { background: #f8fafc; border-radius: 10px; padding: 12px; text-align: center; }
+.exam-stat-box .val { font-size: 22px; font-weight: 800; }
+.exam-stat-box .lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.exam-review-list { display: flex; flex-direction: column; gap: 12px; }
+.exam-review-item { background: var(--card); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); border-left: 4px solid var(--border); }
+.exam-review-item.correct { border-left-color: #38a169; }
+.exam-review-item.wrong { border-left-color: #e53e3e; }
+.exam-review-item.unsure-mark { border-left-color: #d97706; }
+.exam-review-qnum { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
+.exam-review-q { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px; line-height: 1.6; }
+.exam-review-ans { font-size: 13px; margin-bottom: 6px; }
+.exam-review-expl { font-size: 12px; color: #374151; background: #f0fff4; border-radius: 7px; padding: 8px 12px; line-height: 1.7; margin-top: 8px; }
+.exam-hist-item { background: var(--card); border-radius: var(--radius-sm); padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-sm); }
+.exam-hist-score { font-size: 20px; font-weight: 800; color: var(--accent); min-width: 50px; }
+.exam-hist-info { flex: 1; }
+.exam-hist-info .date { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+.exam-hist-info .setting { font-size: 13px; color: var(--text); margin-top: 2px; }
+
 /* ===================== BULLETIN BOARD ===================== */
 #board-overlay {
   display: none; position: fixed; inset: 0; z-index: 15000;
@@ -733,6 +795,7 @@ body {
       <button class="btn btn-gold" onclick="openDiagModal()">📊 AI 總體診斷</button>
       <button class="btn btn-sm" style="background:#7c3aed;color:#fff;border:none" onclick="openWeakDashboard()">🎯 弱點分析</button>
       <button class="btn btn-sm" style="background:#0d9488;color:#fff;border:none" onclick="openBulletinBoard()">💬 留言板</button>
+      <button class="btn btn-sm" style="background:#be185d;color:#fff;border:none" onclick="openExamSetup()">📝 模擬考</button>
       <button class="btn btn-secondary" onclick="exportNotes()">📝 匯出筆記</button>
       <button class="btn btn-secondary" onclick="exportFlagged()">🚩 匯出標記題</button>
       <button class="btn btn-secondary" id="export-btn-text" onclick="exportData()">💾 匯出</button>
@@ -1453,6 +1516,111 @@ body {
       <button onclick="closeCatSortModal()" style="padding:9px 14px;border:none;border-radius:9px;background:#718096;color:#fff;font-family:'Noto Sans TC',sans-serif;font-size:13px;cursor:pointer">取消</button>
       <button onclick="saveCatOrder()" style="flex:1;padding:9px 18px;border:none;border-radius:9px;background:#2b7de9;color:#fff;font-family:'Noto Sans TC',sans-serif;font-size:13px;font-weight:600;cursor:pointer">💾 套用</button>
     </div>
+  </div>
+</div>
+
+<!-- EXAM OVERLAY -->
+<div id="exam-overlay">
+  <div id="exam-app">
+
+    <!-- Header -->
+    <div id="exam-header" style="background:rgba(255,255,255,0.08);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.14);border-radius:var(--radius);padding:13px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <h2 id="exam-header-title" style="font-size:1.1rem;color:#fff;font-weight:700">📝 模擬考</h2>
+      <button onclick="closeExam()" style="padding:7px 14px;border:1px solid rgba(255,255,255,0.25);border-radius:var(--radius-sm);background:rgba(255,255,255,0.1);color:#fff;font-size:13px;font-family:'Noto Sans TC',sans-serif;cursor:pointer">✕ 離開</button>
+    </div>
+
+    <!-- Phase: Setup -->
+    <div id="exam-phase-setup">
+      <div class="exam-setup-card">
+        <h2>⚙️ 模擬考設定</h2>
+
+        <div class="exam-field">
+          <label>科別（可複選）</label>
+          <div class="exam-cat-grid" id="exam-cat-grid"></div>
+        </div>
+
+        <div class="exam-field">
+          <label>題型</label>
+          <div class="exam-type-row">
+            <button class="exam-type-btn selected" data-type="ALL" onclick="selectExamType(this)">📋 全部</button>
+            <button class="exam-type-btn" data-type="single" onclick="selectExamType(this)">☑️ 單選題</button>
+            <button class="exam-type-btn" data-type="multi" onclick="selectExamType(this)">☑️☑️ 複選題</button>
+          </div>
+        </div>
+
+        <div class="exam-field">
+          <label>題數：<span id="exam-count-display">20</span> 題</label>
+          <div class="exam-count-row">
+            <span style="font-size:12px;color:var(--text-muted)">5</span>
+            <input type="range" id="exam-count-slider" min="5" max="30" value="20" oninput="document.getElementById('exam-count-display').textContent=this.value">
+            <span style="font-size:12px;color:var(--text-muted)">30</span>
+            <span class="exam-count-val" id="exam-count-val2">20</span>
+          </div>
+        </div>
+
+        <div id="exam-avail-msg" style="font-size:13px;color:var(--text-muted);margin-bottom:16px"></div>
+        <div style="font-size:12px;color:#94a3b8;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:16px">
+          📌 模擬考自動排除組合題
+        </div>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:18px;padding:12px 14px;background:#fff5f5;border:1px solid #fed7d7;border-radius:var(--radius-sm)">
+          <input type="checkbox" id="exam-auto-mark" checked style="width:18px;height:18px;accent-color:#e53e3e;cursor:pointer;flex-shrink:0">
+          <span style="font-size:13px;color:#742a2a">答題完自動將錯題標記為「錯誤（Again）」</span>
+        </label>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+          <button onclick="openExamHistory()" style="padding:10px 18px;border:2px solid var(--border);border-radius:var(--radius-sm);background:#fff;color:var(--text);font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer">📊 歷史紀錄</button>
+          <button onclick="startExam()" style="padding:10px 24px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-size:14px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(43,125,233,0.3)">🚀 開始模擬考</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase: Question -->
+    <div id="exam-phase-question" style="display:none">
+      <div class="exam-nav">
+        <div class="exam-nav-dots" id="exam-nav-dots"></div>
+        <button onclick="submitExam()" style="padding:8px 16px;border:none;border-radius:var(--radius-sm);background:#be185d;color:#fff;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;white-space:nowrap">交卷 ✓</button>
+      </div>
+      <div class="exam-qcard">
+        <div class="exam-qheader">
+          <span class="exam-qnum" id="exam-qnum"></span>
+          <span class="exam-qcat" id="exam-qcat"></span>
+          <button class="exam-unsure" id="exam-unsure-btn" onclick="toggleExamUnsure()">❓ 標記不確定</button>
+        </div>
+        <div class="exam-qtext" id="exam-qtext"></div>
+        <div class="exam-options" id="exam-options"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:10px;margin-top:4px">
+        <button onclick="examNav(-1)" style="padding:10px 20px;border:none;border-radius:var(--radius-sm);background:rgba(255,255,255,0.12);color:#fff;font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer">◀ 上一題</button>
+        <button onclick="examNav(1)" style="padding:10px 20px;border:none;border-radius:var(--radius-sm);background:rgba(255,255,255,0.12);color:#fff;font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer">下一題 ▶</button>
+      </div>
+    </div>
+
+    <!-- Phase: Result -->
+    <div id="exam-phase-result" style="display:none">
+      <div class="exam-result-header">
+        <div class="exam-score-big" id="exam-score-pct"></div>
+        <div class="exam-score-sub" id="exam-score-sub"></div>
+        <div class="exam-stats-grid" id="exam-stats-grid"></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button onclick="saveExamRecord()" id="exam-save-btn" style="flex:1;padding:11px;border:none;border-radius:var(--radius-sm);background:#38a169;color:#fff;font-size:14px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer">💾 儲存紀錄</button>
+        <button onclick="openExamSetup()" style="flex:1;padding:11px;border:2px solid rgba(255,255,255,0.3);border-radius:var(--radius-sm);background:transparent;color:#fff;font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer">🔄 再考一次</button>
+      </div>
+      <div style="color:#fff;font-size:14px;font-weight:700;margin-top:4px">📋 詳細解析</div>
+      <div class="exam-review-list" id="exam-review-list"></div>
+    </div>
+
+    <!-- Phase: History -->
+    <div id="exam-phase-history" style="display:none">
+      <div style="background:rgba(255,255,255,0.08);border-radius:var(--radius);padding:16px 20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <h3 style="color:#fff;font-size:15px;font-weight:700">📊 模擬考歷史紀錄</h3>
+          <button onclick="showExamPhase('setup')" style="padding:6px 12px;border:1px solid rgba(255,255,255,0.25);border-radius:var(--radius-sm);background:transparent;color:#fff;font-size:13px;font-family:'Noto Sans TC',sans-serif;cursor:pointer">← 返回設定</button>
+        </div>
+        <div id="exam-history-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -3785,6 +3953,7 @@ async function fetchGSheet() {
     const cYear = col('year');
     const cRef  = col('reference');
     const cExpl = colFuzzy('explanation','explantation','explaination','explantion');
+    const cGroup = colFuzzy('group','groupid','group_id');
 
     const fetched = [];
     for (let i = 1; i < data.length; i++) {
@@ -3818,6 +3987,7 @@ async function fetchGSheet() {
         answer,
         reference:   cRef  >= 0 ? String(r[cRef]  || '').trim() : '',
         explanation: cExpl >= 0 ? String(r[cExpl] || '').trim() : '',
+        group:       cGroup >= 0 ? String(r[cGroup] || '').trim() : '',
       });
     }
 
@@ -4154,6 +4324,448 @@ function bFormatTime(iso) {
   if (diff < 604800) return `${Math.floor(diff/86400)} 天前`;
   return d.toLocaleDateString('zh-TW', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
 }
+
+// ===================== EXAM MODE =====================
+let examQuestions = [];    // 本次抽到的題目
+let examAnswers = [];      // 使用者的答案 [null | 'A' | ['A','C']]
+let examUnsure = [];       // 標記不確定 [bool]
+let examCurrent = 0;       // 目前題目 index
+let examType = 'ALL';      // 題型篩選
+let examCats = [];         // 選取科別
+let examSaved = false;     // 是否已儲存
+
+const EXAM_RECORDS_KEY = 'examRecords';
+
+function openExamSetup() {
+  showExamPhase('setup');
+  document.getElementById('exam-overlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  buildExamCatGrid();
+  updateExamAvailMsg();
+}
+
+function closeExam() {
+  document.getElementById('exam-overlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function showExamPhase(phase) {
+  ['setup','question','result','history'].forEach(p => {
+    document.getElementById('exam-phase-' + p).style.display = p === phase ? 'block' : 'none';
+  });
+  const titles = { setup:'📝 模擬考設定', question:'📝 模擬考進行中', result:'📊 模擬考成績', history:'📊 歷史紀錄' };
+  document.getElementById('exam-header-title').textContent = titles[phase] || '📝 模擬考';
+}
+
+// 建立科別選擇格
+function buildExamCatGrid() {
+  const cats = [...new Set(quizData.map(q => q.category).filter(Boolean))];
+  const ordered = [
+    ...catCustomOrder.filter(c => cats.includes(c)),
+    ...cats.filter(c => !catCustomOrder.includes(c))
+  ];
+  const grid = document.getElementById('exam-cat-grid');
+  grid.innerHTML = `<button class="exam-cat-chip all-chip ${examCats.length === 0 ? 'selected' : ''}" onclick="toggleExamCat('ALL')">📂 全部科別</button>` +
+    ordered.map(c => `<button class="exam-cat-chip ${examCats.includes(c) ? 'selected' : ''}" onclick="toggleExamCat('${c}')">${c}</button>`).join('');
+  updateExamAvailMsg();
+}
+
+function toggleExamCat(cat) {
+  if (cat === 'ALL') {
+    examCats = [];
+  } else {
+    const idx = examCats.indexOf(cat);
+    if (idx === -1) examCats.push(cat); else examCats.splice(idx, 1);
+  }
+  buildExamCatGrid();
+}
+
+function selectExamType(btn) {
+  document.querySelectorAll('.exam-type-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  examType = btn.dataset.type;
+  updateExamAvailMsg();
+}
+
+function getExamPool() {
+  let pool = [...quizData];
+  if (examCats.length > 0) pool = pool.filter(q => examCats.includes(q.category));
+  if (examType === 'single') pool = pool.filter(q => !Array.isArray(q.answer));
+  if (examType === 'multi') pool = pool.filter(q => Array.isArray(q.answer));
+  // 自動排除組合題（group 欄位為 1 或非空白非 0）
+  pool = pool.filter(q => {
+    const g = String(q.group || '').trim();
+    return g === '' || g === '0';
+  });
+  return pool;
+}
+
+function updateExamAvailMsg() {
+  const count = parseInt(document.getElementById('exam-count-slider').value);
+  const pool = getExamPool();
+  const msg = document.getElementById('exam-avail-msg');
+  if (!msg) return;
+  if (pool.length === 0) {
+    msg.innerHTML = '<span style="color:#e53e3e">⚠️ 目前條件下沒有可用題目</span>';
+  } else if (pool.length < count) {
+    msg.innerHTML = `<span style="color:#d97706">⚠️ 符合條件的題目只有 ${pool.length} 題，將全部出題</span>`;
+  } else {
+    msg.innerHTML = `<span style="color:#38a169">✅ 符合條件：${pool.length} 題，將隨機抽取 ${count} 題</span>`;
+  }
+}
+
+// 開始考試
+function startExam() {
+  const count = parseInt(document.getElementById('exam-count-slider').value);
+  let pool = getExamPool();
+  if (pool.length === 0) { showToast('⚠️ 沒有符合條件的題目'); return; }
+  // 隨機抽題
+  const shuffled = pool.sort(() => Math.random() - 0.5);
+  examQuestions = shuffled.slice(0, Math.min(count, pool.length));
+  examAnswers = examQuestions.map(() => null);
+  examUnsure = examQuestions.map(() => false);
+  examCurrent = 0;
+  examSaved = false;
+  document.getElementById('exam-save-btn').disabled = false;
+  document.getElementById('exam-save-btn').textContent = '💾 儲存紀錄';
+  showExamPhase('question');
+  renderExamQuestion();
+}
+
+// 渲染題目
+function renderExamQuestion() {
+  const q = examQuestions[examCurrent];
+  const isMulti = Array.isArray(q.answer);
+  document.getElementById('exam-qnum').textContent = `Q ${examCurrent + 1} / ${examQuestions.length}`;
+  document.getElementById('exam-qcat').textContent = q.category || '未分類';
+
+  // 題型標籤
+  let typeBadge = document.getElementById('exam-type-badge');
+  if (!typeBadge) {
+    typeBadge = document.createElement('span');
+    typeBadge.id = 'exam-type-badge';
+    typeBadge.style.cssText = 'font-size:12px;padding:3px 10px;border-radius:10px;font-weight:600;';
+    document.getElementById('exam-qcat').after(typeBadge);
+  }
+  if (isMulti) {
+    typeBadge.textContent = '☑️☑️ 複選題';
+    typeBadge.style.background = '#fef3c7';
+    typeBadge.style.color = '#92400e';
+  } else {
+    typeBadge.textContent = '☑️ 單選題';
+    typeBadge.style.background = '#eff6ff';
+    typeBadge.style.color = '#1e40af';
+  }
+  document.getElementById('exam-qtext').textContent = q.question;
+  const unsureBtn = document.getElementById('exam-unsure-btn');
+  unsureBtn.className = 'exam-unsure' + (examUnsure[examCurrent] ? ' marked' : '');
+  unsureBtn.textContent = examUnsure[examCurrent] ? '❓ 已標記不確定' : '❓ 標記不確定';
+
+  const userAns = examAnswers[examCurrent];
+  const labels = ['A','B','C','D','E','F'];
+  const opts = q.options || [];
+  document.getElementById('exam-options').innerHTML = opts.map((o, i) => {
+    const lbl = labels[i];
+    const text = o.replace(/^[A-F]\.\s*/i, '');
+    const isSelected = isMulti
+      ? (Array.isArray(userAns) && userAns.includes(lbl))
+      : userAns === lbl;
+    return `<button class="exam-opt ${isSelected ? 'selected' : ''}" onclick="selectExamOpt('${lbl}',${isMulti})">
+      <span class="exam-opt-label">${lbl}.</span>${escapeHtml(text)}
+    </button>`;
+  }).join('');
+
+  renderExamDots();
+}
+
+function selectExamOpt(lbl, isMulti) {
+  if (isMulti) {
+    if (!Array.isArray(examAnswers[examCurrent])) examAnswers[examCurrent] = [];
+    const idx = examAnswers[examCurrent].indexOf(lbl);
+    if (idx === -1) examAnswers[examCurrent].push(lbl);
+    else examAnswers[examCurrent].splice(idx, 1);
+    if (examAnswers[examCurrent].length === 0) examAnswers[examCurrent] = null;
+  } else {
+    examAnswers[examCurrent] = lbl;
+  }
+  renderExamQuestion();
+}
+
+function toggleExamUnsure() {
+  examUnsure[examCurrent] = !examUnsure[examCurrent];
+  renderExamQuestion();
+}
+
+function examNav(dir) {
+  const next = examCurrent + dir;
+  if (next < 0 || next >= examQuestions.length) return;
+  examCurrent = next;
+  renderExamQuestion();
+}
+
+function renderExamDots() {
+  document.getElementById('exam-nav-dots').innerHTML = examQuestions.map((q, i) => {
+    let cls = 'exam-dot';
+    if (examUnsure[i]) cls += ' unsure';
+    else if (examAnswers[i] !== null) cls += ' answered';
+    if (i === examCurrent) cls += ' current';
+    return `<button class="${cls}" onclick="examJump(${i})">${i+1}</button>`;
+  }).join('');
+}
+
+function examJump(i) {
+  examCurrent = i;
+  renderExamQuestion();
+}
+
+// 交卷
+function submitExam() {
+  const answered = examAnswers.filter(a => a !== null).length;
+  const total = examQuestions.length;
+  if (answered < total) {
+    if (!confirm(`還有 ${total - answered} 題未作答，確定要交卷嗎？`)) return;
+  }
+  showExamResult();
+}
+
+function showExamResult() {
+  showExamPhase('result');
+  let correct = 0;
+  const results = examQuestions.map((q, i) => {
+    const userAns = examAnswers[i];
+    const correctAns = q.answer;
+    let isCorrect = false;
+    if (Array.isArray(correctAns) && Array.isArray(userAns)) {
+      isCorrect = correctAns.length === userAns.length &&
+        correctAns.every(a => userAns.includes(a));
+    } else {
+      isCorrect = userAns === correctAns;
+    }
+    if (isCorrect) correct++;
+    return { q, userAns, correctAns, isCorrect, unsure: examUnsure[i] };
+  });
+
+  const pct = Math.round((correct / examQuestions.length) * 100);
+  document.getElementById('exam-score-pct').textContent = pct + '%';
+  document.getElementById('exam-score-sub').textContent = `答對 ${correct} / ${examQuestions.length} 題`;
+
+  const unanswered = examAnswers.filter(a => a === null).length;
+  const unsureCount = examUnsure.filter(Boolean).length;
+  document.getElementById('exam-stats-grid').innerHTML = [
+    { val: correct, lbl: '✅ 答對', color: '#38a169' },
+    { val: examQuestions.length - correct - unanswered, lbl: '❌ 答錯', color: '#e53e3e' },
+    { val: unanswered, lbl: '⬜ 未作答', color: '#94a3b8' }
+  ].map(s => `<div class="exam-stat-box">
+    <div class="val" style="color:${s.color}">${s.val}</div>
+    <div class="lbl">${s.lbl}</div>
+  </div>`).join('');
+
+  // 詳細解析
+  document.getElementById('exam-review-list').innerHTML = results.map((r, i) => {
+    const correctStr = Array.isArray(r.correctAns) ? r.correctAns.join(', ') : r.correctAns;
+    const userStr = r.userAns === null ? '未作答' : (Array.isArray(r.userAns) ? r.userAns.join(', ') : r.userAns);
+    let cls = r.isCorrect ? 'correct' : 'wrong';
+    if (r.unsure) cls += ' unsure-mark';
+    return `<div class="exam-review-item ${cls}">
+      <div class="exam-review-qnum">Q${i+1} ${r.isCorrect ? '✅ 正確' : '❌ 錯誤'}${r.unsure ? ' ❓不確定' : ''} — ${r.q.category || ''} ${r.q.year || ''}</div>
+      <div class="exam-review-q">${escapeHtml(r.q.question)}</div>
+      <div class="exam-review-ans">
+        <span style="color:#38a169;font-weight:700">正確答案：${correctStr}</span>
+        ${!r.isCorrect ? `　<span style="color:#e53e3e">你的答案：${userStr}</span>` : ''}
+      </div>
+      ${r.q.explanation ? `<div class="exam-review-expl">💡 ${escapeHtml(r.q.explanation)}</div>` : ''}
+      <div style="margin-top:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">📝 個人筆記</div>
+        <textarea
+          data-qid="${r.q.id}"
+          onchange="saveExamNote(this)"
+          placeholder="在此輸入筆記，自動同步至個人題庫..."
+          style="width:100%;border:2px solid #fbd38d;border-radius:var(--radius-sm);padding:8px 10px;font-family:'Noto Sans TC',sans-serif;font-size:14px;resize:vertical;min-height:60px;background:#fffff0;outline:none;color:var(--text);transition:border-color var(--transition);"
+          onfocus="this.style.borderColor='#d69e2e'"
+          onblur="this.style.borderColor='#fbd38d'"
+        >${escapeHtml(getRecord(r.q.id).note || '')}</textarea>
+      </div>
+    </div>`;
+  }).join('');
+
+  // 存紀錄用的資料
+  window._lastExamResult = { correct, total: examQuestions.length, pct, results };
+
+  // 若勾選「自動標記錯題」則直接執行
+  const autoMark = document.getElementById('exam-auto-mark');
+  if (autoMark && autoMark.checked) {
+    const wrongCount = results.filter(r => !r.isCorrect).length;
+    if (wrongCount > 0) {
+      markExamWrongAsAgain(results);
+      showToast(`❌ 已自動標記 ${wrongCount} 題為錯誤（Again）`);
+    }
+  }
+}
+
+function markExamWrongConfirm() {
+  const r = window._lastExamResult;
+  if (!r) return;
+  const wrongCount = r.results.filter(x => !x.isCorrect).length;
+  if (wrongCount === 0) { showToast('沒有答錯的題目'); return; }
+  if (!confirm(`將 ${wrongCount} 道答錯的題目標記為「錯誤（Again）」？`)) return;
+  markExamWrongAsAgain(r.results);
+  const markBtn = document.getElementById('exam-mark-wrong-btn');
+  if (markBtn) { markBtn.textContent = '✅ 已標記'; markBtn.disabled = true; markBtn.style.background = '#718096'; }
+}
+
+function saveExamNote(textarea) {
+  const qid = textarea.dataset.qid;
+  if (!qid) return;
+  const r = getRecord(qid);
+  r.note = textarea.value;
+  saveUserRecords();
+  // 同步更新主題庫的筆記區（若目前正顯示同一題）
+  const mainNote = document.getElementById('note-textarea');
+  if (mainNote && filteredList.length && filteredList[currentIndex].id === qid) {
+    mainNote.value = textarea.value;
+  }
+  showToast('📝 筆記已同步至個人題庫');
+}
+
+function markExamWrongAsAgain(results) {
+  let count = 0;
+  results.forEach(r => {
+    if (!r.isCorrect) {
+      const rec = getRecord(r.q.id);
+      rec.anki = 'again';
+      rec.dueDate = Date.now() + 86400000;
+      count++;
+    }
+  });
+  saveUserRecords();
+  renderMatrix();
+  renderStats();
+  showToast(`❌ 已將 ${count} 題標記為錯誤（Again）`);
+}
+
+// 儲存紀錄
+function saveExamRecord() {
+  if (examSaved) { showToast('已儲存過了'); return; }
+  const r = window._lastExamResult;
+  if (!r) return;
+  const records = JSON.parse(localStorage.getItem(EXAM_RECORDS_KEY) || '[]');
+  records.unshift({
+    id: Date.now(),
+    date: new Date().toISOString(),
+    pct: r.pct,
+    correct: r.correct,
+    total: r.total,
+    cats: examCats.length === 0 ? '全部科別' : examCats.join('、'),
+    type: examType === 'ALL' ? '全部' : examType === 'single' ? '單選' : '複選',
+    // 儲存每題完整資訊
+    details: r.results.map(x => ({
+      id:          x.q.id,
+      category:    x.q.category || '',
+      year:        x.q.year || '',
+      question:    x.q.question,
+      options:     x.q.options || [],
+      correctAns:  Array.isArray(x.correctAns) ? x.correctAns.join(',') : x.correctAns,
+      userAns:     x.userAns === null ? '' : (Array.isArray(x.userAns) ? x.userAns.join(',') : x.userAns),
+      isCorrect:   x.isCorrect,
+      unsure:      x.unsure,
+      explanation: x.q.explanation || '',
+      reference:   x.q.reference || ''
+    }))
+  });
+  localStorage.setItem(EXAM_RECORDS_KEY, JSON.stringify(records));
+  examSaved = true;
+  document.getElementById('exam-save-btn').textContent = '✅ 已儲存';
+  document.getElementById('exam-save-btn').disabled = true;
+  showToast('💾 模擬考紀錄已儲存');
+}
+
+// 歷史紀錄
+function openExamHistory() {
+  showExamPhase('history');
+  const records = JSON.parse(localStorage.getItem(EXAM_RECORDS_KEY) || '[]');
+  const list = document.getElementById('exam-history-list');
+  if (records.length === 0) {
+    list.innerHTML = '<div style="color:rgba(255,255,255,0.5);text-align:center;padding:32px">尚無模擬考紀錄</div>';
+    return;
+  }
+  list.innerHTML = records.map((r) => {
+    const color = r.pct >= 80 ? '#38a169' : r.pct >= 60 ? '#d97706' : '#e53e3e';
+    const date = new Date(r.date).toLocaleDateString('zh-TW', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    return `<div style="background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm)">
+      <!-- 摘要列 -->
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer" onclick="toggleHistDetail('hdet-${r.id}')">
+        <div style="font-size:22px;font-weight:800;color:${color};min-width:52px">${r.pct}%</div>
+        <div style="flex:1">
+          <div style="font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace">${date}</div>
+          <div style="font-size:13px;color:var(--text);margin-top:2px">${r.cats}｜${r.type}題｜${r.correct}/${r.total} 題正確</div>
+        </div>
+        <span style="font-size:12px;color:var(--text-muted)">詳細 ▼</span>
+        <button onclick="event.stopPropagation();deleteExamRecord(${r.id})" style="border:none;background:none;color:#94a3b8;cursor:pointer;font-size:16px;padding:4px">🗑️</button>
+      </div>
+      <!-- 詳細展開 -->
+      <div id="hdet-${r.id}" style="display:none;border-top:1px solid var(--border);padding:14px 16px;display:none">
+        ${(r.details || []).map((d, i) => {
+          const isMulti = d.correctAns && d.correctAns.includes(',');
+          const optsHtml = d.options.map(o => `<div style="font-size:12px;color:#374151;padding:2px 0">${escapeHtml(o)}</div>`).join('');
+          const userAnsDisplay = d.userAns === '' ? '<span style="color:#94a3b8">未作答</span>' : `<span style="color:${d.isCorrect ? '#38a169' : '#e53e3e'};font-weight:700">${d.userAns}</span>`;
+          return `<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f1f5f9">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+              <span style="font-size:11px;font-weight:700;color:var(--text-muted)">Q${i+1}</span>
+              <span style="font-size:11px;background:#ebf8ff;color:#2c5282;padding:1px 7px;border-radius:8px">${escapeHtml(d.category)}</span>
+              <span style="font-size:11px;background:${isMulti ? '#fef3c7' : '#eff6ff'};color:${isMulti ? '#92400e' : '#1e40af'};padding:1px 7px;border-radius:8px">${isMulti ? '複選' : '單選'}</span>
+              <span style="font-size:11px;margin-left:auto">${d.isCorrect ? '✅ 正確' : '❌ 錯誤'}${d.unsure ? ' ❓' : ''}</span>
+            </div>
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.6">${escapeHtml(d.question)}</div>
+            ${optsHtml}
+            <div style="margin-top:7px;font-size:12px;display:flex;gap:16px;flex-wrap:wrap">
+              <span>✅ 正確答案：<strong style="color:#38a169">${d.correctAns}</strong></span>
+              <span>你的答案：${userAnsDisplay}</span>
+            </div>
+            ${d.reference ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px">📖 ${escapeHtml(d.reference)}</div>` : ''}
+            ${d.explanation ? `<div style="font-size:12px;color:#374151;background:#f0fff4;border-radius:7px;padding:7px 10px;margin-top:6px;line-height:1.7">💡 ${escapeHtml(d.explanation)}</div>` : ''}
+            <div style="margin-top:8px">
+              <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">📝 個人筆記</div>
+              <textarea
+                data-qid="${d.id}"
+                onchange="saveExamNote(this)"
+                placeholder="在此輸入筆記，自動同步至個人題庫..."
+                style="width:100%;border:2px solid #fbd38d;border-radius:var(--radius-sm);padding:7px 10px;font-family:'Noto Sans TC',sans-serif;font-size:13px;resize:vertical;min-height:54px;background:#fffff0;outline:none;color:var(--text);"
+                onfocus="this.style.borderColor='#d69e2e'"
+                onblur="this.style.borderColor='#fbd38d'"
+              >${escapeHtml(getRecord(d.id).note || '')}</textarea>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleHistDetail(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function deleteExamRecord(id) {
+  if (!confirm('確定刪除此筆紀錄？')) return;
+  let records = JSON.parse(localStorage.getItem(EXAM_RECORDS_KEY) || '[]');
+  records = records.filter(r => r.id !== id);
+  localStorage.setItem(EXAM_RECORDS_KEY, JSON.stringify(records));
+  openExamHistory();
+}
+
+// 同步 slider 兩個顯示
+document.addEventListener('DOMContentLoaded', () => {
+  const slider = document.getElementById('exam-count-slider');
+  if (slider) {
+    slider.addEventListener('input', function() {
+      document.getElementById('exam-count-display').textContent = this.value;
+      document.getElementById('exam-count-val2').textContent = this.value;
+      updateExamAvailMsg();
+    });
+  }
+});
 
 // ===================== RUN =====================
 window.addEventListener('DOMContentLoaded', init);
