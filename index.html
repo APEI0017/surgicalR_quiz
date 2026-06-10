@@ -1257,8 +1257,6 @@ body {
           <div class="card-actions">
             <span class="q-timer" id="q-timer">00:00</span>
             <button id="flag-btn" onclick="toggleFlag()" title="標記">🚩</button>
-            <button id="inline-edit-btn" onclick="toggleInlineEdit()" title="編輯此題">✏️ 編輯</button>
-            <button id="delete-btn" onclick="deleteQuestion()">🗑️</button>
           </div>
         </div>
         <!-- INLINE EDIT PANEL -->
@@ -1312,10 +1310,10 @@ body {
             <div class="reference-box" id="reference-box" style="display:none">📚 <strong>出處：</strong><span id="reference-text"></span></div>
             <div class="explanation-box" id="explanation-box" style="display:none;cursor:pointer" title="點擊複製解析到筆記區" onclick="copyExplanationToNote()"><strong>💡 解析：</strong><span style="font-size:11px;color:#63b3ed;margin-left:6px">（點擊複製至筆記）</span><br><span id="explanation-text"></span></div>
             <div id="rating-section">
-              <button class="rating-btn again" onclick="rate('again')">❌ Again<span>10min/明天</span><span class="key-hint">[1]</span></button>
+              <button class="rating-btn again" onclick="rate('again')">❌ Again<span>12小時後</span><span class="key-hint">[1]</span></button>
               <button class="rating-btn hard" onclick="rate('hard')">🟠 Hard<span>1天後</span><span class="key-hint">[2]</span></button>
-              <button class="rating-btn good" onclick="rate('good')">🔵 Good<span>3-5天後</span><span class="key-hint">[3]</span></button>
-              <button class="rating-btn easy" onclick="rate('easy')">✅ Easy<span>14天後</span><span class="key-hint">[4]</span></button>
+              <button class="rating-btn good" onclick="rate('good')">🔵 Good<span>3天後</span><span class="key-hint">[3]</span></button>
+              <button class="rating-btn easy" onclick="rate('easy')">✅ Easy<span>1週後</span><span class="key-hint">[4]</span></button>
             </div>
           </div>
         </div>
@@ -1562,10 +1560,26 @@ body {
         <div style="font-size:12px;color:#94a3b8;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:16px">
           📌 模擬考自動排除組合題
         </div>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:18px;padding:12px 14px;background:#fff5f5;border:1px solid #fed7d7;border-radius:var(--radius-sm)">
-          <input type="checkbox" id="exam-auto-mark" checked style="width:18px;height:18px;accent-color:#e53e3e;cursor:pointer;flex-shrink:0">
-          <span style="font-size:13px;color:#742a2a">答題完自動將錯題標記為「錯誤（Again）」</span>
-        </label>
+
+        <!-- 智慧錯題重練 -->
+        <div style="background:#fef3f2;border:1px solid #fecaca;border-radius:var(--radius-sm);padding:14px;margin-bottom:16px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
+            <input type="checkbox" id="exam-smart-retry" onchange="toggleSmartRetry()" checked style="width:18px;height:18px;accent-color:#dc2626;cursor:pointer;flex-shrink:0">
+            <span style="font-size:13px;font-weight:700;color:#991b1b">🔁 智慧錯題重練</span>
+          </label>
+          <div id="smart-retry-detail" style="display:block">
+            <div style="font-size:12px;color:#7f1d1d;margin-bottom:8px">
+              從 <strong>Again + Hard</strong> 的題目中加入錯題，比例可調整
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:12px;color:#7f1d1d;white-space:nowrap">錯題比例</span>
+              <input type="range" id="exam-retry-pct" min="0" max="50" value="20" step="5"
+                oninput="updateRetryDisplay()" style="flex:1;accent-color:#dc2626">
+              <span id="exam-retry-pct-val" style="font-size:16px;font-weight:800;color:#dc2626;min-width:36px;text-align:center">20%</span>
+            </div>
+            <div id="exam-retry-msg" style="font-size:12px;color:#7f1d1d;margin-top:6px"></div>
+          </div>
+        </div>
 
         <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
           <button onclick="openExamHistory()" style="padding:10px 18px;border:2px solid var(--border);border-radius:var(--radius-sm);background:#fff;color:var(--text);font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer">📊 歷史紀錄</button>
@@ -2047,8 +2061,18 @@ function renderQuestion() {
 
   const dueBadge = document.getElementById('due-badge');
   if (r.dueDate) {
-    const days = Math.ceil((r.dueDate - Date.now()) / 86400000);
-    dueBadge.textContent = days > 0 ? `複習：${days}天後` : '⏰ 今日到期';
+    const diff = r.dueDate - Date.now();
+    let dueText = '';
+    if (diff <= 0) {
+      dueText = '⏰ 今日到期';
+    } else if (diff < 86400000) {
+      const hours = Math.ceil(diff / 3600000);
+      dueText = `複習：${hours}小時後`;
+    } else {
+      const days = Math.ceil(diff / 86400000);
+      dueText = `複習：${days}天後`;
+    }
+    dueBadge.textContent = dueText;
   } else { dueBadge.textContent = ''; }
 
   document.getElementById('flag-btn').classList.toggle('flagged', !!r.flag);
@@ -2170,7 +2194,7 @@ function rate(level) {
   const q = filteredList[currentIndex];
   const r = getRecord(q.id);
   r.anki = level;
-  const durations = { again: 1, hard: 1, good: 4, easy: 14 };
+  const durations = { again: 0.5, hard: 1, good: 3, easy: 7 };
   r.dueDate = Date.now() + durations[level] * 86400000;
 
   // 自動抽取關鍵字（again 或 hard 才記錄）
@@ -3101,13 +3125,14 @@ function importJSON() {
 }
 
 function exportData() {
-  const data = { quizData, userRecords, exportedAt: new Date().toISOString() };
+  const examRecords = JSON.parse(localStorage.getItem('examRecords') || '[]');
+  const data = { quizData, userRecords, examRecords, exportedAt: new Date().toISOString() };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = `surgical_quiz_${new Date().toISOString().slice(0,10)}.json`;
   a.click(); URL.revokeObjectURL(url);
-  showToast('💾 數據已匯出');
+  showToast('💾 數據已匯出（含模擬考紀錄）');
 }
 
 function exportNotes() {
@@ -3210,8 +3235,10 @@ function importData(event) {
       const data = JSON.parse(e.target.result);
       if (data.quizData) { quizData = data.quizData; migrateData(); saveQuizData(); }
       if (data.userRecords) { userRecords = data.userRecords; saveUserRecords(); }
+      if (data.examRecords) { localStorage.setItem('examRecords', JSON.stringify(data.examRecords)); }
       buildCategorySelect(); buildYearSelect(); applyFilter(); updateAdminOverview(); renderAdminTable();
-      showToast('📂 數據已匯入成功');
+      const examCount = data.examRecords ? data.examRecords.length : 0;
+      showToast(`📂 匯入成功（含 ${examCount} 筆模擬考紀錄）`);
     } catch(err) { showToast('❌ 匯入失敗，請確認檔案格式'); }
   };
   reader.readAsText(file); event.target.value = '';
@@ -4084,14 +4111,11 @@ function openBulletinBoard() {
     boardIsAdmin = true; boardShowAdminUI();
   }
   bLoadPosts();
-  // 每 5 分鐘自動重新整理
-  boardPollTimer = setInterval(bLoadPosts, 300000);
 }
 
 function closeBulletinBoard() {
   document.getElementById('board-overlay').classList.remove('show');
   document.body.style.overflow = '';
-  if (boardPollTimer) { clearInterval(boardPollTimer); boardPollTimer = null; }
 }
 
 function boardAdminLogin() {
@@ -4425,14 +4449,61 @@ function updateExamAvailMsg() {
   }
 }
 
+function toggleSmartRetry() {
+  const checked = document.getElementById('exam-smart-retry').checked;
+  document.getElementById('smart-retry-detail').style.display = checked ? 'block' : 'none';
+  if (checked) updateRetryDisplay();
+}
+
+function updateRetryDisplay() {
+  const pct = parseInt(document.getElementById('exam-retry-pct').value);
+  document.getElementById('exam-retry-pct-val').textContent = pct + '%';
+  const count = parseInt(document.getElementById('exam-count-slider').value);
+  const retryCount = Math.floor(count * pct / 100);
+  // 計算可用錯題數
+  const pool = getExamPool();
+  const wrongPool = pool.filter(q => ['again','hard'].includes(getRecord(q.id).anki));
+  const actual = Math.min(retryCount, wrongPool.length);
+  const msg = document.getElementById('exam-retry-msg');
+  if (wrongPool.length === 0) {
+    msg.innerHTML = '<span style="color:#dc2626">⚠️ 目前沒有 Again/Hard 的錯題</span>';
+  } else if (actual < retryCount) {
+    msg.innerHTML = `<span style="color:#d97706">⚠️ 錯題只有 ${wrongPool.length} 題，將加入 ${actual} 題錯題 + ${count - actual} 題一般題</span>`;
+  } else {
+    msg.innerHTML = `<span style="color:#16a34a">✅ 將加入 ${actual} 題錯題 + ${count - actual} 題一般題</span>`;
+  }
+}
+
 // 開始考試
 function startExam() {
   const count = parseInt(document.getElementById('exam-count-slider').value);
+  const useSmartRetry = document.getElementById('exam-smart-retry').checked;
+  const retryPct = parseInt(document.getElementById('exam-retry-pct')?.value || 0);
   let pool = getExamPool();
   if (pool.length === 0) { showToast('⚠️ 沒有符合條件的題目'); return; }
-  // 隨機抽題
-  const shuffled = pool.sort(() => Math.random() - 0.5);
-  examQuestions = shuffled.slice(0, Math.min(count, pool.length));
+
+  let questions = [];
+
+  if (useSmartRetry && retryPct > 0) {
+    const retryCount = Math.floor(count * retryPct / 100);
+    // 錯題池（Again + Hard）
+    const wrongPool = pool.filter(q => ['again','hard'].includes(getRecord(q.id).anki));
+    const normalPool = pool.filter(q => !['again','hard'].includes(getRecord(q.id).anki));
+    // 抽錯題
+    const shuffledWrong = wrongPool.sort(() => Math.random() - 0.5);
+    const retryQs = shuffledWrong.slice(0, Math.min(retryCount, wrongPool.length));
+    // 剩下從一般題補滿
+    const remaining = count - retryQs.length;
+    const shuffledNormal = normalPool.sort(() => Math.random() - 0.5);
+    const normalQs = shuffledNormal.slice(0, Math.min(remaining, normalPool.length));
+    // 合併並打亂順序
+    questions = [...retryQs, ...normalQs].sort(() => Math.random() - 0.5);
+  } else {
+    const shuffled = pool.sort(() => Math.random() - 0.5);
+    questions = shuffled.slice(0, Math.min(count, pool.length));
+  }
+
+  examQuestions = questions;
   examAnswers = examQuestions.map(() => null);
   examUnsure = examQuestions.map(() => false);
   examCurrent = 0;
@@ -4617,15 +4688,8 @@ function showExamResult() {
   // 存紀錄用的資料
   window._lastExamResult = { correct, total: examQuestions.length, pct, results };
 
-  // 若勾選「自動標記錯題」則直接執行
-  const autoMark = document.getElementById('exam-auto-mark');
-  if (autoMark && autoMark.checked) {
-    const wrongCount = results.filter(r => !r.isCorrect).length;
-    if (wrongCount > 0) {
-      markExamWrongAsAgain(results);
-      showToast(`❌ 已自動標記 ${wrongCount} 題為錯誤（Again）`);
-    }
-  }
+  // 自動標記（預設行為，不需勾選）
+  markExamWrongAsAgain(results);
 }
 
 function markExamWrongConfirm() {
@@ -4674,20 +4738,21 @@ function markExamWrongAsAgain(results) {
   let counts = { again: 0, hard: 0, easy: 0 };
   results.forEach(r => {
     const rec = getRecord(r.q.id);
+    const wasAgain = rec.anki === 'again';
     if (!r.isCorrect) {
-      // 答錯（無論有無標記不確定）→ again
+      // 答錯 → Again
       rec.anki = 'again';
-      rec.dueDate = Date.now() + 86400000;
+      rec.dueDate = Date.now() + 0.5 * 86400000;
       counts.again++;
-    } else if (r.unsure) {
-      // 標記不確定但答對 → hard
+    } else if (wasAgain || r.unsure) {
+      // Again 答對（無論有無標記）或 一般題不確定答對 → Hard
       rec.anki = 'hard';
-      rec.dueDate = Date.now() + 86400000;
+      rec.dueDate = Date.now() + 1 * 86400000;
       counts.hard++;
     } else {
-      // 無標記不確定且答對 → easy
+      // 一般題 + 確定 + 答對 → Easy
       rec.anki = 'easy';
-      rec.dueDate = Date.now() + 14 * 86400000;
+      rec.dueDate = Date.now() + 7 * 86400000;
       counts.easy++;
     }
   });
@@ -4698,7 +4763,7 @@ function markExamWrongAsAgain(results) {
   if (counts.again) parts.push(`${counts.again} 題→Again`);
   if (counts.hard)  parts.push(`${counts.hard} 題→Hard`);
   if (counts.easy)  parts.push(`${counts.easy} 題→Easy`);
-  showToast(`已標記：${parts.join('、')}`);
+  if (parts.length) showToast(`已標記：${parts.join('、')}`);
 }
 
 // 儲存紀錄
@@ -4822,6 +4887,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('exam-count-display').textContent = this.value;
       document.getElementById('exam-count-val2').textContent = this.value;
       updateExamAvailMsg();
+      if (document.getElementById('exam-smart-retry')?.checked) updateRetryDisplay();
     });
   }
 });
