@@ -3859,10 +3859,13 @@ let gsheetAutoTimer   = null;
 function initGSheet() {
   const DEFAULT_GSHEET_URL = 'https://script.google.com/macros/s/AKfycbzbhF9faKXzOq-f7I-Hr6NKsjHax6YHlJriXcnJYLSEM8TjTy705ETZJzq5z5jB3rA/exec';
 
-  // 第一次使用時自動寫入預設網址，不需要手動按儲存
+  // 強制設定預設同步間隔為 60 分鐘（覆蓋舊設定）
+  if (!localStorage.getItem(GSHEET_INT_KEY) || localStorage.getItem(GSHEET_INT_KEY) === '5' || localStorage.getItem(GSHEET_INT_KEY) === '15' || localStorage.getItem(GSHEET_INT_KEY) === '30') {
+    localStorage.setItem(GSHEET_INT_KEY, '60');
+  }
+  // 第一次使用時自動寫入預設網址
   if (!localStorage.getItem(GSHEET_URL_KEY)) {
     localStorage.setItem(GSHEET_URL_KEY, DEFAULT_GSHEET_URL);
-    localStorage.setItem(GSHEET_INT_KEY, '60');
   }
 
   const savedUrl = localStorage.getItem(GSHEET_URL_KEY) || DEFAULT_GSHEET_URL;
