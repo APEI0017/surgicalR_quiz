@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>外科專科考古題互動複習系統</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
@@ -5018,13 +5019,14 @@ function getTodayStr() {
 async function openDailyChallenge() {
   if (!currentUser) { showToast('請先登入才能參加每日挑戰'); openAuthModal(); return; }
   const today = getTodayStr();
-  // 檢查今天是否已完成
   const { data: result } = await _supa.from('daily_results').select('pct,correct,total').eq('user_id', currentUser.id).eq('date', today).single();
   if (result) {
     showToast(`✅ 你今天已完成挑戰！答對率 ${result.pct}%`);
     openDailyLeaderboard();
     return;
   }
+  // 手動點按鈕：清除今天的拒絕記錄，讓視窗可以顯示
+  localStorage.removeItem('dailyDismissed_' + today);
   await showDailyInvite();
 }
 
@@ -5032,11 +5034,9 @@ async function openDailyChallenge() {
 async function autoShowDailyInvite() {
   if (!currentUser) return;
   const today = getTodayStr();
-  const dismissKey = 'dailyDismissed_' + today;
-  if (localStorage.getItem(dismissKey)) return; // 今天已拒絕兩次
-  // 檢查今天是否已完成
+  if (localStorage.getItem('dailyDismissed_' + today)) return; // 今天已拒絕自動跳出
   const { data: result } = await _supa.from('daily_results').select('id').eq('user_id', currentUser.id).eq('date', today).single();
-  if (result) return; // 已完成，不跳出
+  if (result) return; // 已完成
   await showDailyInvite();
 }
 
@@ -5053,11 +5053,9 @@ async function showDailyInvite() {
 
 function dismissDailyInvite() {
   const today = getTodayStr();
-  const dismissKey = 'dailyDismissed_' + today;
-  const count = parseInt(localStorage.getItem(dismissKey) || '0') + 1;
-  localStorage.setItem(dismissKey, String(count));
+  localStorage.setItem('dailyDismissed_' + today, 'true');
   document.getElementById('daily-invite-modal').style.display = 'none';
-  if (count >= 2) showToast('今日挑戰已關閉，明天再來！');
+  showToast('可隨時點「📅 每日挑戰」按鈕參加');
 }
 
 // 取得或建立今日挑戰題目
@@ -5379,10 +5377,12 @@ function closeDailyLb() { document.getElementById('daily-lb-modal').style.displa
 // ============================================================
 // SUPABASE 設定（請填入你的 Project URL 和 anon key）
 // ============================================================
-const SUPABASE_URL = 'https://urdirsoyicnfbutbpixs.supabase.co';  // ← 填入你的 Project URL
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVyZGlyc295aWNuZmJ1dGJwaXhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzk4NjEsImV4cCI6MjA5Njg1NTg2MX0.9DuwfsMbjdnbT5dZ24dhkKtcZdHg3SdScqQwdFbK3E0';               // ← 填入你的 anon public key
+const SUPABASE_URL = window.SUPABASE_URL || '';
+const SUPABASE_KEY = window.SUPABASE_KEY || '';
 
-const _supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const _supa = (SUPABASE_URL && SUPABASE_KEY)
+  ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  : null;
 
 let currentUser    = null;
 let currentProfile = null;
@@ -5415,6 +5415,7 @@ async function signOut() {
 }
 
 async function initAuth() {
+  if (!_supa) return; // config.js 未設定時跳過
   const { data: { session } } = await _supa.auth.getSession();
   if (session) {
     currentUser = session.user;
