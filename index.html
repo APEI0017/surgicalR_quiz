@@ -803,7 +803,6 @@ body {
       <button class="btn btn-secondary" onclick="exportNotes()">📝 匯出筆記</button>
       <button class="btn btn-secondary" onclick="exportFlagged()">🚩 匯出標記題</button>
       <button class="btn btn-secondary" id="export-btn-text" onclick="exportData()">💾 匯出</button>
-      <label class="btn btn-secondary" style="cursor:pointer">📂 匯入<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
     </div>
   </div>
 
@@ -5513,12 +5512,57 @@ async function syncRecordsFromCloud() {
   if (!currentUser) return;
   try {
     const { data, error } = await _supa.from('user_records').select('records').eq('user_id', currentUser.id).single();
-    if (error || !data) return;
+    if (error || !data) {
+      // 雲端沒有資料 → 第一次登入，把本地資料上傳
+      await firstTimeUpload();
+      return;
+    }
     userRecords = { ...userRecords, ...(data.records || {}) };
     saveUserRecords();
     applyFilter(); renderMatrix(); renderStats();
     showToast('☁️ 個人紀錄已從雲端載入');
   } catch(e) { console.warn('Cloud load failed:', e); }
+}
+
+async function firstTimeUpload() {
+  // 本地有沒有資料
+  const hasLocalData = Object.keys(userRecords).length > 0;
+  const hasLocalExam = JSON.parse(localStorage.getItem(LS_EXAM) || '[]').length > 0;
+  if (!hasLocalData && !hasLocalExam) {
+    // 本地也沒有，直接初始化
+    await syncRecordsToCloud();
+    return;
+  }
+  // 詢問是否上傳本地資料
+  showConfirm(
+    '☁️ 上傳本地資料',
+    `偵測到你有 ${Object.keys(userRecords).length} 筆本地複習紀錄${hasLocalExam ? '和模擬考歷史' : ''}，是否上傳到雲端帳號？`,
+    async () => {
+      // 上傳 userRecords
+      await _supa.from('user_records').upsert({
+        user_id: currentUser.id,
+        records: userRecords,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+      // 上傳 examRecords
+      const localExams = JSON.parse(localStorage.getItem(LS_EXAM) || '[]');
+      if (localExams.length > 0) {
+        const rows = localExams.map(r => ({
+          user_id: currentUser.id,
+          total:   r.total,
+          correct: r.correct,
+          pct:     r.pct,
+          cats:    r.cats || '全部科別',
+          type:    r.type || '全部',
+          details: r.details || [],
+          taken_at: r.date || new Date().toISOString()
+        }));
+        await _supa.from('exam_records').insert(rows);
+        await updateLeaderboard();
+      }
+      showToast(`✅ 已上傳 ${Object.keys(userRecords).length} 筆紀錄到雲端！`);
+    }
+  );
 }
 
 function debouncedCloudSync() {
