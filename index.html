@@ -3348,10 +3348,14 @@ function importData(event) {
 }
 
 // ── 確認 Modal ──
-function showConfirm(title, msg, cb) {
-  document.getElementById('confirm-title').textContent = '⚠️ ' + title;
+function showConfirm(title, msg, cb, confirmText) {
+  document.getElementById('confirm-title').textContent = title;
   document.getElementById('confirm-msg').textContent = msg;
+  document.getElementById('confirm-ok-btn').textContent = confirmText || '確認';
+  document.getElementById('confirm-ok-btn').style.background = confirmText ? '#38a169' : '#e53e3e';
   confirmCallback = cb;
+  const btn = document.getElementById('confirm-ok-btn');
+  btn.onclick = () => { closeConfirm(); cb && cb(); };
   document.getElementById('confirm-modal').classList.add('show');
 }
 function closeConfirm() {
@@ -5581,7 +5585,8 @@ async function firstTimeUpload() {
         await updateLeaderboard();
       }
       showToast(`✅ 已上傳 ${Object.keys(userRecords).length} 筆紀錄到雲端！`);
-    }
+    },
+    '✅ 確認上傳'
   );
 }
 
