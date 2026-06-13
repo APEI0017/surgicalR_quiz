@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>外科專科考古題互動複習系統</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --navy: #1e3a5f;
@@ -473,11 +474,7 @@ body {
 .exam-review-q { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px; line-height: 1.6; }
 .exam-review-ans { font-size: 13px; margin-bottom: 6px; }
 .exam-review-expl { font-size: 12px; color: #374151; background: #f0fff4; border-radius: 7px; padding: 8px 12px; line-height: 1.7; margin-top: 8px; }
-.exam-hist-item { background: var(--card); border-radius: var(--radius-sm); padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-sm); }
-.exam-hist-score { font-size: 20px; font-weight: 800; color: var(--accent); min-width: 50px; }
-.exam-hist-info { flex: 1; }
-.exam-hist-info .date { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
-.exam-hist-info .setting { font-size: 13px; color: var(--text); margin-top: 2px; }
+
 
 /* ===================== BULLETIN BOARD ===================== */
 #board-overlay {
@@ -531,8 +528,8 @@ body {
   padding: 20px 22px; box-shadow: var(--shadow-md);
 }
 #board-post-form h3 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
-.bform-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-@media(max-width:480px) { .bform-row { grid-template-columns: 1fr; } }
+
+@media(max-width:480px) {  }
 .bform-field label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
 .bform-field input, .bform-field textarea, .bform-field select {
   width: 100%; border: 2px solid var(--border); border-radius: var(--radius-sm);
@@ -792,10 +789,15 @@ body {
   <div id="header">
     <h1 id="header-title">🏥 外科專科 <span>考古題複習系統</span></h1>
     <div class="header-btns">
+      <!-- 登入區塊 -->
+      <div id="auth-area">
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3)" onclick="openAuthModal()">🔑 登入</button>
+      </div>
       <button class="btn btn-gold" onclick="openDiagModal()">📊 AI 總體診斷</button>
       <button class="btn btn-sm" style="background:#7c3aed;color:#fff;border:none" onclick="openWeakDashboard()">🎯 弱點分析</button>
       <button class="btn btn-sm" style="background:#0d9488;color:#fff;border:none" onclick="openBulletinBoard()">💬 留言板</button>
       <button class="btn btn-sm" style="background:#be185d;color:#fff;border:none" onclick="openExamSetup()">📝 模擬考</button>
+      <button class="btn btn-sm" style="background:#0369a1;color:#fff;border:none" onclick="openLeaderboard()">🏆 排行榜</button>
       <button class="btn btn-secondary" onclick="exportNotes()">📝 匯出筆記</button>
       <button class="btn btn-secondary" onclick="exportFlagged()">🚩 匯出標記題</button>
       <button class="btn btn-secondary" id="export-btn-text" onclick="exportData()">💾 匯出</button>
@@ -1699,14 +1701,67 @@ body {
   </div>
 </div>
 
+<!-- AUTH MODAL -->
+<div id="auth-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:20000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;padding:32px;max-width:400px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,0.2);animation:slideUp .2s ease;text-align:center">
+    <div style="font-size:40px;margin-bottom:12px">🏥</div>
+    <h2 style="font-size:20px;font-weight:700;color:#1e3a5f;margin-bottom:8px">外科考古題複習系統</h2>
+    <p style="font-size:14px;color:#64748b;margin-bottom:24px">登入後可同步個人複習紀錄並參與排行榜</p>
+    <button onclick="signInWithGoogle()" style="width:100%;padding:13px;border:2px solid #e2e8f0;border-radius:10px;background:#fff;font-family:'Noto Sans TC',sans-serif;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .15s ease;color:#1a202c" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      使用 Google 帳號登入
+    </button>
+    <p style="font-size:12px;color:#94a3b8;margin-top:16px">登入即表示同意本系統儲存您的複習紀錄</p>
+    <button onclick="closeAuthModal()" style="margin-top:12px;background:none;border:none;color:#94a3b8;font-size:13px;cursor:pointer;font-family:'Noto Sans TC',sans-serif">稍後再說</button>
+  </div>
+</div>
+
+<!-- NICKNAME MODAL -->
+<div id="nickname-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:20001;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;padding:32px;max-width:400px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,0.2);animation:slideUp .2s ease">
+    <h2 style="font-size:18px;font-weight:700;color:#1e3a5f;margin-bottom:8px">👤 設定暱稱</h2>
+    <p style="font-size:14px;color:#64748b;margin-bottom:20px">暱稱將顯示在排行榜上，之後可在個人設定中修改</p>
+    <input type="text" id="nickname-input" placeholder="輸入你的暱稱（2-16字）" maxlength="16"
+      style="width:100%;border:2px solid #e2e8f0;border-radius:10px;padding:12px 16px;font-family:'Noto Sans TC',sans-serif;font-size:15px;outline:none;margin-bottom:8px"
+      onfocus="this.style.borderColor='#2b7de9'" onblur="this.style.borderColor='#e2e8f0'"
+      onkeydown="if(event.key==='Enter')saveNickname()">
+    <p id="nickname-err" style="font-size:12px;color:#e53e3e;margin-bottom:12px;display:none">請輸入 2-16 字的暱稱</p>
+    <button onclick="saveNickname()" style="width:100%;padding:12px;border:none;border-radius:10px;background:#2b7de9;color:#fff;font-family:'Noto Sans TC',sans-serif;font-size:15px;font-weight:700;cursor:pointer">✅ 確認並開始</button>
+  </div>
+</div>
+
+<!-- LEADERBOARD MODAL -->
+<div id="leaderboard-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:20000;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:28px;max-width:600px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,0.2);animation:slideUp .25s ease;margin:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h2 style="font-size:18px;font-weight:700;color:#1e3a5f">🏆 排行榜</h2>
+      <button onclick="closeLeaderboard()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8">✕</button>
+    </div>
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">每日更新 · 以模擬考成績計算</p>
+    <!-- Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:20px">
+      <button id="lb-tab-rate" onclick="switchLbTab('rate')" style="flex:1;padding:9px;border:2px solid #2b7de9;border-radius:var(--radius-sm);background:#2b7de9;color:#fff;font-family:'Noto Sans TC',sans-serif;font-size:13px;font-weight:600;cursor:pointer">🎯 答對率排行</button>
+      <button id="lb-tab-count" onclick="switchLbTab('count')" style="flex:1;padding:9px;border:2px solid #e2e8f0;border-radius:var(--radius-sm);background:#fff;color:#64748b;font-family:'Noto Sans TC',sans-serif;font-size:13px;cursor:pointer">📚 答題數排行</button>
+    </div>
+    <div id="lb-body" style="min-height:200px"></div>
+    <!-- My rank -->
+    <div id="lb-my-rank" style="display:none;margin-top:16px;padding:12px 16px;background:#eff6ff;border-radius:10px;border:1px solid #bfdbfe">
+      <div style="font-size:13px;color:#1e40af;font-weight:600" id="lb-my-rank-text"></div>
+    </div>
+    <div style="margin-top:16px;text-align:center">
+      <button onclick="refreshLeaderboard()" style="padding:8px 20px;border:2px solid #e2e8f0;border-radius:var(--radius-sm);background:#fff;color:#64748b;font-family:'Noto Sans TC',sans-serif;font-size:13px;cursor:pointer">🔄 重新整理</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast"></div>
 
 <script>
-// ===================== DEFAULT DATA =====================
+// ── 預設資料 ──
 const DEFAULT_DATA = [];
 
-// ===================== STATE =====================
+// ── 狀態變數 ──
 let quizData = [];
 let userRecords = {};
 let filteredList = [];
@@ -1727,7 +1782,7 @@ let matrixBulkMode = false;
 let matrixBulkSelected = new Set(); // indices in filteredList
 let confirmCallback = null;
 
-// ===================== INIT =====================
+// ── 初始化 ──
 function init() {
   applyAppearance(loadAppearance());
   loadFromStorage();
@@ -1745,7 +1800,7 @@ function init() {
 }
 
 // Backward-compat migration: add year='未指定' if missing
-// ===================== STORAGE =====================
+// ── 儲存 ──
 function saveQuizData() { localStorage.setItem('surgicalQuizData', JSON.stringify(quizData)); }
 function loadFromStorage() {
   const s = localStorage.getItem('surgicalQuizData');
@@ -1761,7 +1816,7 @@ function getRecord(qId) {
   return userRecords[qId];
 }
 
-// ===================== CATEGORY / YEAR SELECT =====================
+// ── 科別 / 年份選單 ──
 const DEFAULT_CAT_ORDER = [
   '外科基礎','外科營養','外科重症加護','消化外科','內分泌外科',
   '肝膽胰外科','內視鏡外科','大腸直腸外科','心臟外科','血管外科',
@@ -1882,7 +1937,7 @@ function applyFilter() {
       (q.options && q.options.some(o => o.toLowerCase().includes(kw)))
     );
   }
-  if (filterState.due) { const now = Date.now(); list = list.filter(q => { const r = getRecord(q.id); return !r.dueDate || r.dueDate <= now; }); }
+  if (filterState.due) { const now = Date.now(); list = list.filter(q => { const r = getRecord(q.id); return r.dueDate && r.dueDate <= now; }); }
   if (filterState.flag) list = list.filter(q => getRecord(q.id).flag);
   if (filterState.wrong) list = list.filter(q => getRecord(q.id).anki === 'again');
   if (filterState.anki !== 'ALL') list = list.filter(q => getRecord(q.id).anki === filterState.anki);
@@ -1896,7 +1951,7 @@ function applyFilter() {
   updateProgress();
 }
 
-// ===================== MATRIX =====================
+// ── 視覺化矩陣 ──
 let matrixPanelOpen = false;
 
 function toggleMatrixPanel() {
@@ -1988,7 +2043,7 @@ function jumpTo(idx) {
   document.getElementById('question-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-// ===================== PROGRESS =====================
+// ── 進度條 ──
 function updateProgress() {
   const total = filteredList.length;
   const done = filteredList.filter(q => getRecord(q.id).anki !== 'new').length;
@@ -2022,7 +2077,7 @@ function toggleAnkiFilter(level) {
   applyFilter();
 }
 
-// ===================== RENDER QUESTION =====================
+// ── 渲染題目 ──
 function renderQuestion() {
   stopTimer(); revealed = false; selectedOptions = []; questionLocked = false; hesitatedFlag = false;
   const card = document.getElementById('question-card');
@@ -2105,7 +2160,7 @@ function renderOptions(q, r) {
   });
 }
 
-// ===================== OPTION SELECTION =====================
+// ── 選項操作 ──
 function selectOption(key, q) {
   if (questionLocked) return;
   const isMulti = Array.isArray(q.answer);
@@ -2127,7 +2182,7 @@ function selectOption(key, q) {
   }
 }
 
-// ===================== TIMER =====================
+// ── 計時器 ──
 function startTimer() {
   timerSeconds = 0;
   const el = document.getElementById('q-timer');
@@ -2142,7 +2197,7 @@ function startTimer() {
 }
 function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
 
-// ===================== REVEAL ANSWER =====================
+// ── 顯示答案 ──
 function revealAnswer() {
   if (revealed) return;
   stopTimer(); revealed = true; questionLocked = true;
@@ -2188,7 +2243,7 @@ function colorOptions(q, ansArr) {
   });
 }
 
-// ===================== RATING =====================
+// ── Anki 評分 ──
 function rate(level) {
   if (!revealed) return;
   const q = filteredList[currentIndex];
@@ -2207,6 +2262,7 @@ function rate(level) {
   }
 
   saveUserRecords(); renderMatrix(); updateProgress(); renderAdminTable();
+  debouncedCloudSync(); // 雲端同步（5秒 debounce）
   if (level === 'good' || level === 'easy' || level === 'again' || level === 'hard') setTimeout(() => navigate(1), 150);
 }
 
@@ -2240,7 +2296,7 @@ function toggleAttr(el) {
   saveUserRecords();
 }
 
-// ===================== NAVIGATION =====================
+// ── 導航 ──
 function navigate(dir) {
   const newIdx = currentIndex + dir;
   if (newIdx < 0 || newIdx >= filteredList.length) return;
@@ -2249,7 +2305,7 @@ function navigate(dir) {
   document.getElementById('question-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ===================== FLAG =====================
+// ── 標記 ──
 function toggleFlag() {
   if (!filteredList.length) return;
   const q = filteredList[currentIndex];
@@ -2273,7 +2329,7 @@ function deleteQuestion() {
   });
 }
 
-// ===================== NOTE =====================
+// ── 筆記 ──
 function autoResize(el) {
   el.style.height = 'auto';
   el.style.height = el.scrollHeight + 'px';
@@ -2314,7 +2370,7 @@ function copyExplanationToNote() {
   showToast('📝 解析已複製至筆記區');
 }
 
-// ===================== HIGHLIGHTS =====================
+// ── 螢光筆 ──
 function escapeHtml(str) {
   if (!str) return '';
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -2399,7 +2455,7 @@ function searchUpToDateWithText(text) {
   window.open(`https://www.uptodate.com/contents/search?search=${encodeURIComponent(text||'')}`, '_blank');
 }
 
-// ===================== AI MODAL =====================
+// ── AI 解析 ──
 function requestAI() {
   copyAIPrompt();
   const today = new Date().toDateString();
@@ -2629,7 +2685,7 @@ function openAIPlatformDirect(p) {
   showToast('📋 Prompt 已複製，請貼上至 AI 視窗');
 }
 
-// ===================== DIAGNOSIS MODAL =====================
+// ── AI 總體診斷 ──
 function openDiagModal() {
   const cats = {};
   quizData.forEach(q => {
@@ -2681,7 +2737,7 @@ function confirmCatChange() {
   closeCatModal();
 }
 
-// ===================== ADMIN DRAWER =====================
+// ── 後台管理 ──
 const ADMIN_PW = 'surgical2024'; // ← 請改成你自己的後台密碼
 let adminUnlocked = false;
 
@@ -2743,7 +2799,7 @@ function openAdminContent() {
   renderAdminTable();
 }
 
-// ===================== ADMIN TABLE =====================
+// ── 後台題目列表 ──
 let bulkAdminMode = false;
 let bulkAdminSelected = new Set();
 
@@ -2900,7 +2956,7 @@ function syncAdminFilterDropdowns() {
   if (prevYr && prevYr !== 'ALL') yrSel.value = prevYr;
 }
 
-// ===================== EDIT MODAL =====================
+// ── 編輯 Modal ──
 let editingQuestionId = null;
 
 function openEditModal(id) {
@@ -3007,7 +3063,7 @@ function saveEditModal() {
   syncToGSheet(q);
 }
 
-// ===================== SYNC TO GOOGLE SHEETS =====================
+// ── 同步 Google Sheets ──
 function syncToGSheet(q) {
   const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbzbhF9faKXzOq-f7I-Hr6NKsjHax6YHlJriXcnJYLSEM8TjTy705ETZJzq5z5jB3rA/exec';
   const url = localStorage.getItem('gsheet_webapp_url') || DEFAULT_URL;
@@ -3062,67 +3118,8 @@ function syncToGSheet(q) {
     showToast('⚠️ 網路錯誤，請確認網路連線');
   });
 }
-function importJSON() {
-  const raw = document.getElementById('json-input').value.trim();
-  if (!raw) { showToast('❌ 請先貼上 JSON 數據'); return; }
-  let arr;
-  try { arr = JSON.parse(raw); } catch(e) { showToast('❌ JSON 格式錯誤，請檢查'); return; }
-  if (!Array.isArray(arr)) arr = [arr];
-
-  const existingIds = new Set(quizData.map(q => q.id));
-  const newlyAddedIds = new Set();
-  let added = 0;
-  const idConflicts = []; // [{incoming, existing}]
-
-  arr.forEach(q => {
-    if (!q.id || !q.question || !q.options || !q.answer) return;
-    // Auto year from id
-    if (q.year === undefined || q.year === null || q.year === '' || q.year === '未指定') {
-      const yearMatch = String(q.id).match(/(19|20)\d{2}/);
-      q.year = yearMatch ? yearMatch[0] : '未指定';
-    }
-    // Auto detect S/M type from id
-    q = applyTypeFromId(q);
-
-    if (existingIds.has(q.id)) {
-      // Instead of silently skipping, queue for review
-      const existing = quizData.find(x => x.id === q.id);
-      idConflicts.push({ incoming: q, existing });
-    } else {
-      quizData.push(q);
-      existingIds.add(q.id);
-      newlyAddedIds.add(q.id);
-      added++;
-    }
-  });
-
-  saveQuizData(); buildCategorySelect(); buildYearSelect(); applyFilter(); updateAdminOverview(); renderAdminTable();
-  document.getElementById('json-input').value = '';
-
-  // Build all pairs needing review: ID conflicts + similarity duplicates among new
-  const simPairs = added > 0 ? findDedupPairsForNewIds(newlyAddedIds) : [];
-
-  // Convert ID conflicts into dedup pairs
-  const conflictPairs = idConflicts.map(({ incoming, existing }) => ({
-    a: existing,
-    b: incoming,
-    sim: 1.0,          // Same ID = treat as 100% match
-    isIdConflict: true // Flag to show special label
-  }));
-
-  const allPairs = [...conflictPairs, ...simPairs];
-
-  if (allPairs.length > 0) {
-    const msg = [];
-    if (added > 0) msg.push(`追加 ${added} 題`);
-    if (idConflicts.length > 0) msg.push(`${idConflicts.length} 題 ID 衝突待審`);
-    if (simPairs.length > 0) msg.push(`${simPairs.length} 組疑似重複`);
-    showToast(`⚠️ ${msg.join('，')}，請逐一確認`);
-    setTimeout(() => startDedupWithPairs(allPairs), 600);
-  } else {
-    showToast(`✅ 已追加 ${added} 道新題目，無重複`);
-  }
-}
+// importJSON: batch JSON import removed from UI
+function importJSON() { showToast("批量匯入功能已移除"); }
 
 function exportData() {
   const examRecords = JSON.parse(localStorage.getItem('examRecords') || '[]');
@@ -3244,7 +3241,7 @@ function importData(event) {
   reader.readAsText(file); event.target.value = '';
 }
 
-// ===================== CONFIRM MODAL =====================
+// ── 確認 Modal ──
 function showConfirm(title, msg, cb) {
   document.getElementById('confirm-title').textContent = '⚠️ ' + title;
   document.getElementById('confirm-msg').textContent = msg;
@@ -3262,7 +3259,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ===================== KEYBOARD =====================
+// ── 鍵盤快捷鍵 ──
 function setupKeyboard() {
   document.addEventListener('keydown', e => {
     const active = document.activeElement;
@@ -3279,7 +3276,7 @@ function setupKeyboard() {
   });
 }
 
-// ===================== TOAST =====================
+// ── Toast 提示 ──
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -3297,13 +3294,13 @@ document.addEventListener('click', e => {
   if (e.target === document.getElementById('weak-modal')) closeWeakDashboard();
 });
 
-// ===================== INLINE EDIT =====================
+// ── 行內編輯 ──
 function toggleInlineEdit() {
   const panel = document.getElementById('inline-edit-panel');
   const isOpen = panel.style.display !== 'none';
   if (isOpen) {
     panel.style.display = 'none';
-    document.getElementById('inline-edit-btn').textContent = '✏️ 編輯';
+    // inline-edit-btn removed
   } else {
     if (!filteredList.length) return;
     const q = filteredList[currentIndex];
@@ -3341,8 +3338,7 @@ function saveInlineEdit() {
   orig.reference = document.getElementById('ie-reference').value.trim();
   q.reference = orig.reference;
   // explanation 也一併更新（若有 ie-explanation 欄位）
-  const ieExpl = document.getElementById('ie-explanation');
-  if (ieExpl) { orig.explanation = ieExpl.value.trim(); q.explanation = orig.explanation; }
+  // ie-explanation field not present in simplified inline edit
   const ansRaw = document.getElementById('ie-answer').value.trim();
   try { orig.answer = JSON.parse(ansRaw); } catch(e) { orig.answer = ansRaw; }
   q.answer = orig.answer;
@@ -3361,7 +3357,7 @@ function saveInlineEdit() {
   syncToGSheet(orig);
 }
 
-// ===================== QUICK ADD =====================
+// ── 快速新增 ──
 function quickAddQuestion() {
   const id = document.getElementById('qa-id').value.trim();
   const cat = document.getElementById('qa-cat').value.trim();
@@ -3637,7 +3633,7 @@ function closeDedupModal() {
   document.getElementById('dedup-modal').classList.remove('show');
 }
 
-// ===================== APPEARANCE SETTINGS =====================
+// ── 外觀設定 ──
 const APPEARANCE_KEY = 'surgicalQuizAppearance';
 
 const DEFAULT_APPEARANCE = {
@@ -3850,7 +3846,7 @@ function applyPreset(name) {
   showToast('🎨 主題已套用，記得按「儲存設定」');
 }
 
-// ===================== GOOGLE SHEETS INTEGRATION =====================
+// ── Google Sheets 整合 ──
 const GSHEET_URL_KEY  = 'gsheet_webapp_url';
 const GSHEET_TAB_KEY  = 'gsheet_tab';
 const GSHEET_INT_KEY  = 'gsheet_interval';
@@ -4096,7 +4092,7 @@ function copyGASCode() {
     .catch(() => showToast('複製失敗，請手動選取程式碼'));
 }
 
-// ===================== BULLETIN BOARD =====================
+// ── 留言板 ──
 const BOARD_GAS_URL = 'https://script.google.com/macros/s/AKfycbzbhF9faKXzOq-f7I-Hr6NKsjHax6YHlJriXcnJYLSEM8TjTy705ETZJzq5z5jB3rA/exec';
 const BOARD_ADMIN_PW = 'surgical2024'; // ← 請改成你自己的密碼
 let boardIsAdmin = false;
@@ -4363,7 +4359,7 @@ function bFormatTime(iso) {
   return d.toLocaleDateString('zh-TW', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
 }
 
-// ===================== EXAM MODE =====================
+// ── 模擬考 ──
 let examQuestions = [];    // 本次抽到的題目
 let examAnswers = [];      // 使用者的答案 [null | 'A' | ['A','C']]
 let examUnsure = [];       // 標記不確定 [bool]
@@ -4693,6 +4689,12 @@ function showExamResult() {
 
   // 自動標記（預設行為，不需勾選）
   markExamWrongAsAgain(results);
+
+  // 同步到雲端（登入後才執行）
+  if (currentUser) {
+    syncExamToCloud({ correct, total: examQuestions.length, pct, results });
+    syncRecordsToCloud();
+  }
 }
 
 function markExamWrongConfirm() {
@@ -4702,8 +4704,6 @@ function markExamWrongConfirm() {
   if (wrongCount === 0) { showToast('沒有答錯的題目'); return; }
   if (!confirm(`將 ${wrongCount} 道答錯的題目標記為「錯誤（Again）」？`)) return;
   markExamWrongAsAgain(r.results);
-  const markBtn = document.getElementById('exam-mark-wrong-btn');
-  if (markBtn) { markBtn.textContent = '✅ 已標記'; markBtn.disabled = true; markBtn.style.background = '#718096'; }
 }
 
 function copyExplToExamNote(explEl, qid) {
@@ -4895,8 +4895,226 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ===================== RUN =====================
-window.addEventListener('DOMContentLoaded', init);
+// ============================================================
+// SUPABASE 設定（請填入你的 Project URL 和 anon key）
+// ============================================================
+const SUPABASE_URL = 'https://urdirsoyicnfbutbpixs.supabase.co';  // ← 填入你的 Project URL
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVyZGlyc295aWNuZmJ1dGJwaXhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNzk4NjEsImV4cCI6MjA5Njg1NTg2MX0.9DuwfsMbjdnbT5dZ24dhkKtcZdHg3SdScqQwdFbK3E0';               // ← 填入你的 anon public key
+
+const _supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser    = null;
+let currentProfile = null;
+let lbCurrentTab   = 'rate';
+let _syncTimer     = null;
+
+// ── AUTH ──
+function openAuthModal()  { document.getElementById('auth-modal').style.display  = 'flex'; }
+function closeAuthModal() { document.getElementById('auth-modal').style.display  = 'none'; }
+
+async function signInWithGoogle() {
+  const { error } = await _supa.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+  if (error) showToast('❌ 登入失敗：' + error.message);
+}
+
+async function signOut() {
+  await _supa.auth.signOut();
+  currentUser = null; currentProfile = null;
+  renderAuthArea();
+  showToast('👋 已登出');
+}
+
+async function initAuth() {
+  const { data: { session } } = await _supa.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await loadProfile();
+    renderAuthArea();
+    await syncRecordsFromCloud();
+  }
+  _supa.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      currentUser = session.user;
+      closeAuthModal();
+      const exists = await loadProfile();
+      if (!exists) {
+        document.getElementById('nickname-modal').style.display = 'flex';
+        setTimeout(() => document.getElementById('nickname-input').focus(), 200);
+      } else {
+        showToast(`👋 歡迎回來，${currentProfile.nickname}！`);
+        renderAuthArea();
+        await syncRecordsFromCloud();
+      }
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null; currentProfile = null; renderAuthArea();
+    }
+  });
+}
+
+function renderAuthArea() {
+  const area = document.getElementById('auth-area');
+  if (!area) return;
+  if (currentUser && currentProfile) {
+    const emojis = ['👨‍⚕️','👩‍⚕️','🩺','💊','🏥','🔬','💉','🧬'];
+    const emoji  = emojis[currentProfile.nickname.charCodeAt(0) % emojis.length];
+    area.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:7px">
+          <span style="font-size:16px">${emoji}</span>
+          <span style="color:#fff;font-size:13px;font-weight:600">${currentProfile.nickname}</span>
+        </div>
+        <button onclick="openProfileSettings()" style="width:30px;height:30px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:50%;color:#fff;font-size:13px;cursor:pointer" title="修改暱稱">⚙️</button>
+        <button onclick="signOut()" style="height:30px;padding:0 10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:var(--radius-sm);color:rgba(255,255,255,0.7);font-size:12px;cursor:pointer;font-family:'Noto Sans TC',sans-serif">登出</button>
+      </div>`;
+  } else {
+    area.innerHTML = `<button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3)" onclick="openAuthModal()">🔑 登入</button>`;
+  }
+}
+
+// ── PROFILE ──
+async function loadProfile() {
+  if (!currentUser) return false;
+  const { data, error } = await _supa.from('profiles').select('*').eq('id', currentUser.id).single();
+  if (error || !data) return false;
+  currentProfile = data; return true;
+}
+
+async function saveNickname() {
+  const nickname = document.getElementById('nickname-input').value.trim();
+  const errEl    = document.getElementById('nickname-err');
+  if (nickname.length < 2 || nickname.length > 16) { errEl.style.display = ''; return; }
+  errEl.style.display = 'none';
+  const { error } = await _supa.from('profiles').upsert({ id: currentUser.id, nickname, updated_at: new Date().toISOString() });
+  if (error) { showToast('❌ 儲存失敗：' + error.message); return; }
+  currentProfile = { id: currentUser.id, nickname };
+  document.getElementById('nickname-modal').style.display = 'none';
+  renderAuthArea();
+  showToast(`✅ 歡迎，${nickname}！`);
+  await syncRecordsFromCloud();
+}
+
+function openProfileSettings() {
+  const newNick = prompt('修改暱稱（2-16字）：', currentProfile?.nickname || '');
+  if (!newNick || newNick.trim().length < 2 || newNick.trim().length > 16) return;
+  _supa.from('profiles').upsert({ id: currentUser.id, nickname: newNick.trim(), updated_at: new Date().toISOString() })
+    .then(() => { currentProfile.nickname = newNick.trim(); renderAuthArea(); showToast('✅ 暱稱已更新'); });
+}
+
+// ── CLOUD SYNC ──
+async function syncRecordsToCloud() {
+  if (!currentUser) return;
+  try {
+    await _supa.from('user_records').upsert({ user_id: currentUser.id, records: userRecords, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+  } catch(e) { console.warn('Cloud sync failed:', e); }
+}
+
+async function syncRecordsFromCloud() {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await _supa.from('user_records').select('records').eq('user_id', currentUser.id).single();
+    if (error || !data) return;
+    userRecords = { ...userRecords, ...(data.records || {}) };
+    saveUserRecords();
+    applyFilter(); renderMatrix(); renderStats();
+    showToast('☁️ 個人紀錄已從雲端載入');
+  } catch(e) { console.warn('Cloud load failed:', e); }
+}
+
+function debouncedCloudSync() {
+  if (!currentUser) return;
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(syncRecordsToCloud, 5000);
+}
+
+// ── EXAM → CLOUD ──
+async function syncExamToCloud(examResult) {
+  if (!currentUser) return;
+  try {
+    await _supa.from('exam_records').insert({
+      user_id: currentUser.id, total: examResult.total, correct: examResult.correct,
+      pct: examResult.pct, cats: examCats.length === 0 ? '全部科別' : examCats.join('、'),
+      type: examType === 'ALL' ? '全部' : examType === 'single' ? '單選' : '複選',
+      details: examResult.results.map(r => ({ id: r.q.id, correct: r.isCorrect, userAns: r.userAns, correctAns: r.correctAns }))
+    });
+    await updateLeaderboard();
+  } catch(e) { console.warn('Exam cloud sync failed:', e); }
+}
+
+async function updateLeaderboard() {
+  if (!currentUser || !currentProfile) return;
+  try {
+    const { data } = await _supa.from('exam_records').select('total, correct').eq('user_id', currentUser.id);
+    if (!data || !data.length) return;
+    const totalAnswered = data.reduce((s,r) => s+r.total, 0);
+    const totalCorrect  = data.reduce((s,r) => s+r.correct, 0);
+    const correctRate   = totalAnswered > 0 ? Math.round(totalCorrect/totalAnswered*10000)/100 : 0;
+    await _supa.from('leaderboard').upsert({
+      user_id: currentUser.id, nickname: currentProfile.nickname,
+      total_answered: totalAnswered, total_correct: totalCorrect,
+      correct_rate: correctRate, exam_count: data.length,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+  } catch(e) { console.warn('Leaderboard update failed:', e); }
+}
+
+// ── LEADERBOARD ──
+async function openLeaderboard() {
+  document.getElementById('leaderboard-modal').style.display = 'flex';
+  await refreshLeaderboard();
+}
+function closeLeaderboard() { document.getElementById('leaderboard-modal').style.display = 'none'; }
+
+function switchLbTab(tab) {
+  lbCurrentTab = tab;
+  ['rate','count'].forEach(t => {
+    const btn = document.getElementById('lb-tab-' + t);
+    btn.style.background  = t === tab ? '#2b7de9' : '#fff';
+    btn.style.color       = t === tab ? '#fff'    : '#64748b';
+    btn.style.borderColor = t === tab ? '#2b7de9' : '#e2e8f0';
+  });
+  renderLeaderboardData(window._lbData || []);
+}
+
+async function refreshLeaderboard() {
+  document.getElementById('lb-body').innerHTML = '<div style="text-align:center;padding:32px;color:#94a3b8">⏳ 載入中...</div>';
+  try {
+    const { data, error } = await _supa.from('leaderboard').select('*').limit(100);
+    if (error) throw error;
+    window._lbData = data || [];
+    renderLeaderboardData(window._lbData);
+  } catch(e) {
+    document.getElementById('lb-body').innerHTML = '<div style="text-align:center;padding:32px;color:#e53e3e">⚠️ 載入失敗</div>';
+  }
+}
+
+function renderLeaderboardData(data) {
+  const isRate = lbCurrentTab === 'rate';
+  const sorted = [...data].sort((a,b) => isRate ? (b.correct_rate - a.correct_rate) : (b.total_answered - a.total_answered));
+  if (!sorted.length) { document.getElementById('lb-body').innerHTML = '<div style="text-align:center;padding:32px;color:#94a3b8">尚無排行榜資料</div>'; return; }
+  const medals = ['🥇','🥈','🥉'];
+  document.getElementById('lb-body').innerHTML = sorted.map((r,i) => {
+    const isMe  = currentUser && r.user_id === currentUser.id;
+    const val   = isRate ? `${r.correct_rate}%（${r.total_answered} 題）` : `${r.total_answered} 題（${r.exam_count} 次）`;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;margin-bottom:6px;background:${isMe?'#eff6ff':'#f8fafc'};border:${isMe?'2px solid #bfdbfe':'1px solid #e2e8f0'}">
+      <span style="font-size:${i<3?'20px':'14px'};font-weight:700;min-width:28px;text-align:center;color:${i<3?'inherit':'#64748b'}">${medals[i]||i+1}</span>
+      <span style="flex:1;font-size:14px;font-weight:${isMe?700:500};color:${isMe?'#1e40af':'#1a202c'}">${r.nickname}${isMe?' （你）':''}</span>
+      <span style="font-size:13px;color:#64748b;font-family:'JetBrains Mono',monospace">${val}</span>
+    </div>`;
+  }).join('');
+  const myIdx = currentUser ? sorted.findIndex(r => r.user_id === currentUser.id) : -1;
+  const myRankEl = document.getElementById('lb-my-rank');
+  if (myIdx >= 0) {
+    const myVal = isRate ? `${sorted[myIdx].correct_rate}%` : `${sorted[myIdx].total_answered} 題`;
+    document.getElementById('lb-my-rank-text').textContent = `你的排名：第 ${myIdx+1} 名 · ${myVal}`;
+    myRankEl.style.display = '';
+  } else { myRankEl.style.display = 'none'; }
+}
+
+// ── 啟動 ──
+window.addEventListener('DOMContentLoaded', () => { init(); initAuth(); });
 </script>
 </body>
 </html>
