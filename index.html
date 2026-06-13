@@ -2813,19 +2813,27 @@ function _printPDF(title, body) {
 
 function importData(event) {
   const file = event.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
+  // 使用 text() 方法，iOS Safari 相容性更好
+  const readFile = file.text
+    ? file.text()
+    : new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = e => res(e.target.result);
+        reader.onerror = rej;
+        reader.readAsText(file);
+      });
+  readFile.then(text => {
     try {
-      const data = JSON.parse(e.target.result);
+      const data = JSON.parse(text);
       if (data.quizData) { quizData = data.quizData; migrateData(); saveQuizData(); }
       if (data.userRecords) { userRecords = data.userRecords; saveUserRecords(); }
       if (data.examRecords) { localStorage.setItem('examRecords', JSON.stringify(data.examRecords)); }
       buildCategorySelect(); buildYearSelect(); applyFilter(); updateAdminOverview(); renderAdminTable();
       const examCount = data.examRecords ? data.examRecords.length : 0;
       showToast(`📂 匯入成功（含 ${examCount} 筆模擬考紀錄）`);
-    } catch(err) { showToast('❌ 匯入失敗，請確認檔案格式'); }
-  };
-  reader.readAsText(file); event.target.value = '';
+    } catch(err) { showToast('❌ 匯入失敗：' + err.message); }
+  }).catch(() => showToast('❌ 無法讀取檔案'));
+  event.target.value = '';
 }
 
 // ── 確認 Modal ──
