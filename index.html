@@ -797,6 +797,7 @@ body {
       <button class="btn btn-sm" style="background:#7c3aed;color:#fff;border:none" onclick="openWeakDashboard()">🎯 弱點分析</button>
       <button class="btn btn-sm" style="background:#0d9488;color:#fff;border:none" onclick="openBulletinBoard()">💬 留言板</button>
       <button class="btn btn-sm" style="background:#be185d;color:#fff;border:none" onclick="openExamSetup()">📝 模擬考</button>
+      <button class="btn btn-sm" style="background:#f59e0b;color:#fff;border:none" onclick="openDailyChallenge()">📅 每日挑戰</button>
       <button class="btn btn-sm" style="background:#0369a1;color:#fff;border:none" onclick="openLeaderboard()">🏆 排行榜</button>
       <button class="btn btn-secondary" onclick="exportNotes()">📝 匯出筆記</button>
       <button class="btn btn-secondary" onclick="exportFlagged()">🚩 匯出標記題</button>
@@ -1712,7 +1713,14 @@ body {
       使用 Google 帳號登入
     </button>
     <p style="font-size:12px;color:#94a3b8;margin-top:16px">登入即表示同意本系統儲存您的複習紀錄</p>
-    <button onclick="closeAuthModal()" style="margin-top:12px;background:none;border:none;color:#94a3b8;font-size:13px;cursor:pointer;font-family:'Noto Sans TC',sans-serif">稍後再說</button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px">
+      <button onclick="closeAuthModal()" style="background:none;border:none;color:#94a3b8;font-size:13px;cursor:pointer;font-family:'Noto Sans TC',sans-serif">稍後再說</button>
+      <span style="color:#e2e8f0">|</span>
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:#94a3b8;font-family:'Noto Sans TC',sans-serif">
+        <input type="checkbox" id="auth-dont-show" style="accent-color:#64748b">
+        不再提示
+      </label>
+    </div>
   </div>
 </div>
 
@@ -1750,6 +1758,103 @@ body {
     </div>
     <div style="margin-top:16px;text-align:center">
       <button onclick="refreshLeaderboard()" style="padding:8px 20px;border:2px solid #e2e8f0;border-radius:var(--radius-sm);background:#fff;color:#64748b;font-family:'Noto Sans TC',sans-serif;font-size:13px;cursor:pointer">🔄 重新整理</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY CHALLENGE INVITE MODAL -->
+<div id="daily-invite-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:19000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:20px;padding:32px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.25);animation:slideUp .25s ease;text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📅</div>
+    <h2 style="font-size:20px;font-weight:700;color:#1e3a5f;margin-bottom:6px">今日挑戰開始了！</h2>
+    <p id="daily-invite-date" style="font-size:13px;color:#94a3b8;margin-bottom:6px"></p>
+    <p style="font-size:14px;color:#64748b;margin-bottom:8px">20 題隨機題目，所有人同一套</p>
+    <div id="daily-invite-status" style="font-size:13px;margin-bottom:20px"></div>
+    <button onclick="startDailyChallenge()" id="daily-start-btn" style="width:100%;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-family:'Noto Sans TC',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 12px rgba(245,158,11,0.4)">🚀 參加今日挑戰</button>
+    <button onclick="dismissDailyInvite()" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:12px;background:#fff;color:#64748b;font-family:'Noto Sans TC',sans-serif;font-size:14px;cursor:pointer">今天不參加</button>
+  </div>
+</div>
+
+<!-- DAILY CHALLENGE OVERLAY -->
+<div id="daily-overlay" style="display:none;position:fixed;inset:0;z-index:18000;background:linear-gradient(160deg,#0d1f3c 0%,#1e3a5f 55%,#1a4a6e 100%);overflow-y:auto">
+  <div style="max-width:760px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:14px">
+
+    <!-- Header -->
+    <div style="background:rgba(255,255,255,0.08);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.14);border-radius:var(--radius);padding:13px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <h2 style="font-size:1.1rem;color:#fff;font-weight:700">📅 每日挑戰</h2>
+        <div id="daily-header-date" style="font-size:12px;color:rgba(255,255,255,0.6)"></div>
+      </div>
+      <button onclick="closeDailyChallenge()" style="padding:7px 14px;border:1px solid rgba(255,255,255,0.25);border-radius:var(--radius-sm);background:rgba(255,255,255,0.1);color:#fff;font-size:13px;font-family:'Noto Sans TC',sans-serif;cursor:pointer">✕ 離開</button>
+    </div>
+
+    <!-- Nav dots -->
+    <div id="daily-nav" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.08);border-radius:var(--radius);padding:14px 18px;flex-wrap:wrap">
+      <div id="daily-nav-dots" style="display:flex;gap:5px;flex:1;flex-wrap:wrap"></div>
+      <button onclick="submitDailyChallenge()" style="padding:8px 16px;border:none;border-radius:var(--radius-sm);background:#f59e0b;color:#fff;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;white-space:nowrap">交卷 ✓</button>
+    </div>
+
+    <!-- Question card -->
+    <div style="background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow-md)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <span id="daily-qnum" style="font-size:14px;font-weight:700;color:var(--navy)"></span>
+        <span id="daily-qcat" style="font-size:12px;background:#ebf8ff;color:#2c5282;padding:3px 10px;border-radius:10px"></span>
+        <span id="daily-qtype" style="font-size:12px;padding:3px 10px;border-radius:10px"></span>
+        <button id="daily-unsure-btn" onclick="toggleDailyUnsure()" style="font-size:12px;background:#fffbeb;color:#92400e;padding:3px 10px;border-radius:10px;border:1px solid #fcd34d;cursor:pointer;margin-left:auto">❓ 標記不確定</button>
+      </div>
+      <div id="daily-qtext" style="font-size:15px;line-height:1.8;color:var(--text);margin-bottom:18px"></div>
+      <div id="daily-options" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+    <!-- Nav buttons -->
+    <div style="display:flex;justify-content:space-between;gap:10px">
+      <button onclick="dailyNav(-1)" style="padding:10px 20px;border:none;border-radius:var(--radius-sm);background:rgba(255,255,255,0.12);color:#fff;font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer">◀ 上一題</button>
+      <button onclick="dailyNav(1)"  style="padding:10px 20px;border:none;border-radius:var(--radius-sm);background:rgba(255,255,255,0.12);color:#fff;font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer">下一題 ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY RESULT MODAL -->
+<div id="daily-result-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:19500;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:28px;max-width:600px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,0.2);animation:slideUp .25s ease;margin:auto">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:48px;margin-bottom:8px" id="daily-result-emoji">🎉</div>
+      <h2 style="font-size:22px;font-weight:800;color:var(--accent)" id="daily-result-pct"></h2>
+      <p style="font-size:15px;color:var(--text-muted);margin-top:4px" id="daily-result-sub"></p>
+      <div id="daily-result-badge" style="margin-top:10px"></div>
+    </div>
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px" id="daily-result-stats"></div>
+    <!-- Rank preview -->
+    <div id="daily-rank-preview" style="background:#eff6ff;border-radius:10px;padding:14px;margin-bottom:20px;text-align:center">
+      <div style="font-size:13px;color:#1e40af;font-weight:600" id="daily-rank-text">計算排名中...</div>
+    </div>
+    <!-- Buttons -->
+    <div style="display:flex;gap:10px;margin-bottom:20px">
+      <button onclick="openDailyLeaderboard()" style="flex:1;padding:11px;border:none;border-radius:var(--radius-sm);background:#f59e0b;color:#fff;font-size:14px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer">🏆 查看今日排行</button>
+      <button onclick="closeDailyResult()" style="flex:1;padding:11px;border:2px solid var(--border);border-radius:var(--radius-sm);background:#fff;color:var(--text);font-size:14px;font-family:'Noto Sans TC',sans-serif;cursor:pointer">返回題庫</button>
+    </div>
+    <!-- Review -->
+    <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:10px">📋 詳細解析</div>
+    <div id="daily-review-list" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+</div>
+
+<!-- DAILY LEADERBOARD MODAL -->
+<div id="daily-lb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:20000;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:28px;max-width:560px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,0.2);animation:slideUp .25s ease;margin:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-size:18px;font-weight:700;color:#1e3a5f">📅 每日挑戰排行榜</h2>
+      <button onclick="closeDailyLb()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8">✕</button>
+    </div>
+    <!-- Date selector -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <label style="font-size:13px;color:var(--text-muted)">選擇日期：</label>
+      <select id="daily-lb-date-select" onchange="loadDailyLbForDate(this.value)" style="flex:1;height:34px;border:2px solid var(--border);border-radius:var(--radius-sm);padding:0 10px;font-family:'Noto Sans TC',sans-serif;font-size:13px;outline:none;color:var(--text)"></select>
+    </div>
+    <div id="daily-lb-body" style="min-height:160px"></div>
+    <div id="daily-lb-my-rank" style="display:none;margin-top:12px;padding:10px 14px;background:#eff6ff;border-radius:10px;border:1px solid #bfdbfe">
+      <div style="font-size:13px;color:#1e40af;font-weight:600" id="daily-lb-my-rank-text"></div>
     </div>
   </div>
 </div>
@@ -4896,6 +5001,382 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================================
+// DAILY CHALLENGE
+// ============================================================
+let dailyQuestions  = [];
+let dailyAnswers    = [];
+let dailyUnsure     = [];
+let dailyCurrent    = 0;
+let dailyStartTime  = null;
+let dailyDismissed  = false;
+
+function getTodayStr() {
+  return new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD
+}
+
+// 開啟每日挑戰（手動點按鈕）
+async function openDailyChallenge() {
+  if (!currentUser) { showToast('請先登入才能參加每日挑戰'); openAuthModal(); return; }
+  const today = getTodayStr();
+  // 檢查今天是否已完成
+  const { data: result } = await _supa.from('daily_results').select('pct,correct,total').eq('user_id', currentUser.id).eq('date', today).single();
+  if (result) {
+    showToast(`✅ 你今天已完成挑戰！答對率 ${result.pct}%`);
+    openDailyLeaderboard();
+    return;
+  }
+  await showDailyInvite();
+}
+
+// 自動跳出邀請（頁面載入後）
+async function autoShowDailyInvite() {
+  if (!currentUser) return;
+  const today = getTodayStr();
+  const dismissKey = 'dailyDismissed_' + today;
+  if (localStorage.getItem(dismissKey)) return; // 今天已拒絕兩次
+  // 檢查今天是否已完成
+  const { data: result } = await _supa.from('daily_results').select('id').eq('user_id', currentUser.id).eq('date', today).single();
+  if (result) return; // 已完成，不跳出
+  await showDailyInvite();
+}
+
+async function showDailyInvite() {
+  const today = getTodayStr();
+  const dateDisplay = new Date().toLocaleDateString('zh-TW', { month:'long', day:'numeric', weekday:'long' });
+  document.getElementById('daily-invite-date').textContent = dateDisplay;
+  // 取得今日題目數量
+  const challenge = await getOrCreateDailyChallenge();
+  const total = challenge ? challenge.question_ids.length : 20;
+  document.getElementById('daily-invite-status').innerHTML = `<span style="color:#f59e0b;font-weight:600">📚 共 ${total} 題</span>`;
+  document.getElementById('daily-invite-modal').style.display = 'flex';
+}
+
+function dismissDailyInvite() {
+  const today = getTodayStr();
+  const dismissKey = 'dailyDismissed_' + today;
+  const count = parseInt(localStorage.getItem(dismissKey) || '0') + 1;
+  localStorage.setItem(dismissKey, String(count));
+  document.getElementById('daily-invite-modal').style.display = 'none';
+  if (count >= 2) showToast('今日挑戰已關閉，明天再來！');
+}
+
+// 取得或建立今日挑戰題目
+async function getOrCreateDailyChallenge() {
+  const today = getTodayStr();
+  // 先查資料庫
+  const { data: existing } = await _supa.from('daily_challenges').select('*').eq('date', today).single();
+  if (existing) return existing;
+  // 不存在 → 建立新的
+  const pool = quizData.filter(q => {
+    const g = String(q.group || '').trim();
+    return g === '' || g === '0';
+  });
+  if (pool.length < 20) { showToast('⚠️ 題庫題目不足'); return null; }
+  // 用日期當 seed 做偽隨機（同一天所有人抽到一樣的題）
+  const seed = today.replace(/-/g, '');
+  const shuffled = seededShuffle(pool, parseInt(seed));
+  const selected = shuffled.slice(0, 20);
+  const { data: created, error } = await _supa.from('daily_challenges').insert({
+    date: today,
+    question_ids: selected.map(q => q.id)
+  }).select().single();
+  if (error) { console.warn('Daily challenge create error:', error); return null; }
+  return created;
+}
+
+// Seeded shuffle（相同 seed 產生相同順序）
+function seededShuffle(arr, seed) {
+  const a = [...arr];
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const j = Math.abs(s) % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// 開始作答
+async function startDailyChallenge() {
+  document.getElementById('daily-invite-modal').style.display = 'none';
+  const challenge = await getOrCreateDailyChallenge();
+  if (!challenge) return;
+  // 載入題目
+  dailyQuestions = challenge.question_ids.map(id => quizData.find(q => q.id === id)).filter(Boolean);
+  if (!dailyQuestions.length) { showToast('⚠️ 題目載入失敗，請重新整理'); return; }
+  dailyAnswers   = dailyQuestions.map(() => null);
+  dailyUnsure    = dailyQuestions.map(() => false);
+  dailyCurrent   = 0;
+  dailyStartTime = Date.now();
+  const today    = getTodayStr();
+  document.getElementById('daily-header-date').textContent = new Date().toLocaleDateString('zh-TW', { month:'long', day:'numeric', weekday:'long' });
+  document.getElementById('daily-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  renderDailyQuestion();
+}
+
+function closeDailyChallenge() {
+  if (!confirm('確定要離開今日挑戰？進度不會儲存。')) return;
+  document.getElementById('daily-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function renderDailyQuestion() {
+  const q      = dailyQuestions[dailyCurrent];
+  const isMulti = Array.isArray(q.answer);
+  document.getElementById('daily-qnum').textContent = `Q ${dailyCurrent + 1} / ${dailyQuestions.length}`;
+  document.getElementById('daily-qcat').textContent = q.category || '未分類';
+  const typeBadge = document.getElementById('daily-qtype');
+  typeBadge.textContent = isMulti ? '☑️☑️ 複選題' : '☑️ 單選題';
+  typeBadge.style.background = isMulti ? '#fef3c7' : '#eff6ff';
+  typeBadge.style.color      = isMulti ? '#92400e' : '#1e40af';
+  document.getElementById('daily-qtext').textContent = q.question;
+  const unsureBtn = document.getElementById('daily-unsure-btn');
+  unsureBtn.className = dailyUnsure[dailyCurrent]
+    ? 'exam-unsure marked' : 'exam-unsure';
+  unsureBtn.textContent = dailyUnsure[dailyCurrent] ? '❓ 已標記不確定' : '❓ 標記不確定';
+  unsureBtn.style.cssText = `font-size:12px;padding:3px 10px;border-radius:10px;border:1px solid #fcd34d;cursor:pointer;margin-left:auto;background:${dailyUnsure[dailyCurrent]?'#fcd34d':'#fffbeb'};color:#92400e;font-family:'Noto Sans TC',sans-serif;`;
+  const userAns  = dailyAnswers[dailyCurrent];
+  const labels   = ['A','B','C','D','E','F'];
+  document.getElementById('daily-options').innerHTML = (q.options || []).map((o, i) => {
+    const lbl = labels[i];
+    const text = o.replace(/^[A-F]\.\s*/i, '');
+    const isSelected = isMulti
+      ? (Array.isArray(userAns) && userAns.includes(lbl))
+      : userAns === lbl;
+    return `<button onclick="selectDailyOpt('${lbl}',${isMulti})" style="padding:11px 16px;border:2px solid ${isSelected?'var(--accent)':'var(--border)'};border-radius:var(--radius-sm);cursor:pointer;font-size:14px;color:var(--text);background:${isSelected?'#dbeafe':'#fff'};display:flex;align-items:center;gap:10px;font-family:'Noto Sans TC',sans-serif;text-align:left;width:100%;transition:all .15s ease">
+      <span style="font-weight:700;color:var(--accent);min-width:20px">${lbl}.</span>${escapeHtml(text)}
+    </button>`;
+  }).join('');
+  renderDailyNavDots();
+}
+
+function selectDailyOpt(lbl, isMulti) {
+  if (isMulti) {
+    if (!Array.isArray(dailyAnswers[dailyCurrent])) dailyAnswers[dailyCurrent] = [];
+    const idx = dailyAnswers[dailyCurrent].indexOf(lbl);
+    if (idx === -1) dailyAnswers[dailyCurrent].push(lbl);
+    else dailyAnswers[dailyCurrent].splice(idx, 1);
+    if (!dailyAnswers[dailyCurrent].length) dailyAnswers[dailyCurrent] = null;
+  } else {
+    dailyAnswers[dailyCurrent] = lbl;
+  }
+  renderDailyQuestion();
+}
+
+function toggleDailyUnsure() {
+  dailyUnsure[dailyCurrent] = !dailyUnsure[dailyCurrent];
+  renderDailyQuestion();
+}
+
+function dailyNav(dir) {
+  const next = dailyCurrent + dir;
+  if (next < 0 || next >= dailyQuestions.length) return;
+  dailyCurrent = next;
+  renderDailyQuestion();
+}
+
+function renderDailyNavDots() {
+  document.getElementById('daily-nav-dots').innerHTML = dailyQuestions.map((q, i) => {
+    let bg = 'rgba(255,255,255,0.1)', border = 'rgba(255,255,255,0.3)';
+    if (dailyUnsure[i])           { bg = '#d97706'; border = '#d97706'; }
+    else if (dailyAnswers[i] !== null) { bg = 'var(--accent)'; border = 'var(--accent)'; }
+    const outline = i === dailyCurrent ? 'outline:3px solid #fff;outline-offset:1px;' : '';
+    return `<button onclick="dailyJump(${i})" style="width:28px;height:28px;border-radius:6px;border:2px solid ${border};background:${bg};color:#fff;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;${outline}">${i+1}</button>`;
+  }).join('');
+}
+
+function dailyJump(i) { dailyCurrent = i; renderDailyQuestion(); }
+
+async function submitDailyChallenge() {
+  const answered = dailyAnswers.filter(a => a !== null).length;
+  if (answered < dailyQuestions.length) {
+    if (!confirm(`還有 ${dailyQuestions.length - answered} 題未作答，確定交卷嗎？`)) return;
+  }
+  const durationSeconds = Math.floor((Date.now() - dailyStartTime) / 1000);
+  // 計算成績
+  let correct = 0;
+  const results = dailyQuestions.map((q, i) => {
+    const userAns    = dailyAnswers[i];
+    const correctAns = q.answer;
+    let isCorrect = false;
+    if (Array.isArray(correctAns) && Array.isArray(userAns)) {
+      isCorrect = correctAns.length === userAns.length && correctAns.every(a => userAns.includes(a));
+    } else { isCorrect = userAns === correctAns; }
+    if (isCorrect) correct++;
+    return { q, userAns, correctAns, isCorrect, unsure: dailyUnsure[i] };
+  });
+  const pct = Math.round(correct / dailyQuestions.length * 100);
+  // 關閉作答畫面
+  document.getElementById('daily-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+  // 儲存到 Supabase
+  const today = getTodayStr();
+  await _supa.from('daily_results').insert({
+    user_id: currentUser.id, date: today,
+    correct, total: dailyQuestions.length, pct,
+    duration_seconds: durationSeconds
+  });
+  // 顯示結果
+  showDailyResult(correct, dailyQuestions.length, pct, durationSeconds, results);
+  // 自動標記 Anki
+  markExamWrongAsAgain(results);
+}
+
+function showDailyResult(correct, total, pct, duration, results) {
+  const emojis = pct >= 90 ? '🏆' : pct >= 75 ? '🎉' : pct >= 60 ? '👍' : '💪';
+  document.getElementById('daily-result-emoji').textContent = emojis;
+  document.getElementById('daily-result-pct').textContent   = pct + '%';
+  document.getElementById('daily-result-sub').textContent   = `答對 ${correct} / ${total} 題`;
+  // 稱號
+  const title = getDoctorTitle(pct);
+  document.getElementById('daily-result-badge').innerHTML = `<span style="display:inline-block;padding:5px 16px;background:${title.bg};color:${title.color};border-radius:20px;font-size:14px;font-weight:700">${title.icon} ${title.name}</span>`;
+  // Stats
+  const mins = Math.floor(duration / 60), secs = duration % 60;
+  document.getElementById('daily-result-stats').innerHTML = [
+    { val: correct,    lbl: '✅ 答對', color: '#38a169' },
+    { val: total - correct, lbl: '❌ 答錯', color: '#e53e3e' },
+    { val: `${mins}:${String(secs).padStart(2,'0')}`, lbl: '⏱ 作答時間', color: '#2b7de9' }
+  ].map(s => `<div style="background:#f8fafc;border-radius:10px;padding:12px;text-align:center">
+    <div style="font-size:20px;font-weight:800;color:${s.color}">${s.val}</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${s.lbl}</div>
+  </div>`).join('');
+  // 排名（非同步取得）
+  loadMyDailyRank(getTodayStr());
+  // 詳細解析
+  document.getElementById('daily-review-list').innerHTML = results.map((r, i) => {
+    const correctStr = Array.isArray(r.correctAns) ? r.correctAns.join(', ') : r.correctAns;
+    const userStr    = r.userAns === null ? '未作答' : (Array.isArray(r.userAns) ? r.userAns.join(', ') : r.userAns);
+    const isMulti    = Array.isArray(r.correctAns);
+    const optsHtml   = (r.q.options || []).map(o => {
+      const lbl = o.match(/^([A-F])\./i)?.[1]?.toUpperCase() || '';
+      const isC = (Array.isArray(r.correctAns) ? r.correctAns : [r.correctAns]).includes(lbl);
+      const isU = (Array.isArray(r.userAns) ? r.userAns : [r.userAns]).includes(lbl);
+      let bg = '#f8fafc', border = '#e2e8f0', color = '#374151';
+      if (isC) { bg = '#f0fff4'; border = '#38a169'; color = '#276749'; }
+      if (isU && !isC) { bg = '#fff5f5'; border = '#fc8181'; color = '#c53030'; }
+      return `<div style="padding:6px 10px;border:1.5px solid ${border};border-radius:7px;background:${bg};font-size:13px;color:${color};margin-bottom:4px">${isC?'✅ ':isU?'❌ ':''}${escapeHtml(o)}</div>`;
+    }).join('');
+    return `<div style="background:var(--card);border-radius:var(--radius);padding:16px;border-left:4px solid ${r.isCorrect?'#38a169':'#e53e3e'}">
+      <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:6px">Q${i+1} ${r.isCorrect?'✅ 正確':'❌ 錯誤'}${r.unsure?' ❓':''} — ${r.q.category||''}</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.6">${escapeHtml(r.q.question)}</div>
+      <div style="margin-bottom:8px">${optsHtml}</div>
+      <div style="font-size:13px"><span style="color:#38a169;font-weight:700">正確答案：${correctStr}</span>${!r.isCorrect?`　<span style="color:#e53e3e">你的答案：${userStr}</span>`:''}</div>
+      ${r.q.explanation ? `<div style="font-size:12px;color:#374151;background:#f0fff4;border-radius:7px;padding:8px 12px;margin-top:8px;line-height:1.7;cursor:pointer" onclick="copyDailyExplToNote(this,'${r.q.id.replace(/'/g,"\\'")}')">💡 <span style="font-size:11px;color:#63b3ed">（點擊複製至筆記）</span><br>${escapeHtml(r.q.explanation)}</div>` : ''}
+    </div>`;
+  }).join('');
+  document.getElementById('daily-result-modal').style.display = 'flex';
+}
+
+function copyDailyExplToNote(el, qid) {
+  const expl = el.innerText.replace(/（點擊複製至筆記）\n?/,'').replace(/^💡\s*/,'').trim();
+  const r    = getRecord(qid);
+  const ta   = document.getElementById('note-textarea');
+  const prefix = r.note && r.note.trim() ? r.note.trim() + '\n\n' : '';
+  const newNote = prefix + '【解析】\n' + expl;
+  r.note = newNote; saveUserRecords();
+  if (ta) { ta.value = newNote; autoResize(ta); }
+  showToast('📝 解析已複製至筆記');
+}
+
+async function loadMyDailyRank(date) {
+  try {
+    const { data } = await _supa.from('daily_results').select('user_id,pct,duration_seconds,completed_at').eq('date', date).order('pct', { ascending: false }).order('duration_seconds', { ascending: true });
+    if (!data) return;
+    const myIdx = data.findIndex(r => r.user_id === currentUser.id);
+    const rankEl = document.getElementById('daily-rank-text');
+    if (rankEl) rankEl.textContent = myIdx >= 0 ? `🏆 今日排名：第 ${myIdx + 1} 名（共 ${data.length} 人參加）` : '排名計算中...';
+  } catch(e) {}
+}
+
+function closeDailyResult() {
+  document.getElementById('daily-result-modal').style.display = 'none';
+}
+
+// 稱號系統（依答對率）
+function getDoctorTitle(pct) {
+  if (pct >= 90) return { name:'外科主任', icon:'👑', bg:'#fef3c7', color:'#92400e' };
+  if (pct >= 75) return { name:'主治醫師', icon:'🏅', bg:'#e0f2fe', color:'#0369a1' };
+  if (pct >= 60) return { name:'住院醫師', icon:'⚕️',  bg:'#f0fdf4', color:'#166534' };
+  return           { name:'PGY',        icon:'🌱', bg:'#f1f5f9', color:'#475569' };
+}
+
+// 稱號（依模擬考累計答對率）
+function getMyTitle() {
+  if (!currentUser) return null;
+  // 從 leaderboard 取得資料
+  return window._myLeaderboardData || null;
+}
+
+// 每日排行榜
+async function openDailyLeaderboard() {
+  document.getElementById('daily-lb-modal').style.display = 'flex';
+  // 載入有資料的日期
+  const { data: dates } = await _supa.from('daily_results').select('date').order('date', { ascending: false });
+  const uniqueDates = [...new Set((dates || []).map(d => d.date))];
+  const sel = document.getElementById('daily-lb-date-select');
+  sel.innerHTML = uniqueDates.map(d => `<option value="${d}">${new Date(d+'T00:00:00').toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'short'})}</option>`).join('');
+  if (uniqueDates.length) await loadDailyLbForDate(uniqueDates[0]);
+}
+
+async function loadDailyLbForDate(date) {
+  const body = document.getElementById('daily-lb-body');
+  body.innerHTML = '<div style="text-align:center;padding:24px;color:#94a3b8">⏳ 載入中...</div>';
+  try {
+    // 取得當天結果
+    const { data: results } = await _supa.from('daily_results').select('user_id,correct,total,pct,duration_seconds,completed_at').eq('date', date).order('pct', { ascending: false }).order('duration_seconds', { ascending: true });
+    // 取得暱稱
+    const userIds = (results || []).map(r => r.user_id);
+    const { data: profiles } = userIds.length
+      ? await _supa.from('profiles').select('id,nickname').in('id', userIds)
+      : { data: [] };
+    const nickMap = {};
+    (profiles || []).forEach(p => { nickMap[p.id] = p.nickname; });
+    if (!results || !results.length) {
+      body.innerHTML = '<div style="text-align:center;padding:24px;color:#94a3b8">當天尚無人完成挑戰</div>';
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    body.innerHTML = results.map((r, i) => {
+      const isMe  = currentUser && r.user_id === currentUser.id;
+      const nick  = nickMap[r.user_id] || '匿名';
+      const title = getDoctorTitle(r.pct);
+      const mins  = Math.floor((r.duration_seconds||0) / 60);
+      const secs  = (r.duration_seconds||0) % 60;
+      const time  = `${mins}:${String(secs).padStart(2,'0')}`;
+      // 特殊標記
+      const isPerfect = r.correct === r.total;
+      const badges = [];
+      if (i === 0)    badges.push('👑');
+      if (isPerfect)  badges.push('💯');
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;margin-bottom:6px;background:${isMe?'#eff6ff':'#f8fafc'};border:${isMe?'2px solid #bfdbfe':'1px solid #e2e8f0'}">
+        <span style="font-size:${i<3?'18px':'13px'};font-weight:700;min-width:26px;text-align:center;color:${i<3?'inherit':'#64748b'}">${medals[i]||i+1}</span>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+            <span style="font-size:13px;font-weight:${isMe?700:500};color:${isMe?'#1e40af':'#1a202c'}">${nick}${isMe?' （你）':''}</span>
+            <span style="font-size:11px;padding:1px 7px;background:${title.bg};color:${title.color};border-radius:8px">${title.icon} ${title.name}</span>
+            ${badges.join('')}
+          </div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:2px">⏱ ${time}</div>
+        </div>
+        <span style="font-size:14px;font-weight:800;color:${r.pct>=90?'#d97706':r.pct>=75?'#2b7de9':r.pct>=60?'#38a169':'#718096'}">${r.pct}%</span>
+      </div>`;
+    }).join('');
+    // 我的排名
+    const myIdx = results.findIndex(r => currentUser && r.user_id === currentUser.id);
+    const myRankEl = document.getElementById('daily-lb-my-rank');
+    if (myIdx >= 0) {
+      document.getElementById('daily-lb-my-rank-text').textContent = `你的排名：第 ${myIdx+1} 名 · ${results[myIdx].pct}%`;
+      myRankEl.style.display = '';
+    } else { myRankEl.style.display = 'none'; }
+  } catch(e) {
+    body.innerHTML = '<div style="text-align:center;padding:24px;color:#e53e3e">⚠️ 載入失敗</div>';
+  }
+}
+
+function closeDailyLb() { document.getElementById('daily-lb-modal').style.display = 'none'; }
+
+// ============================================================
 // SUPABASE 設定（請填入你的 Project URL 和 anon key）
 // ============================================================
 const SUPABASE_URL = 'https://urdirsoyicnfbutbpixs.supabase.co';  // ← 填入你的 Project URL
@@ -4910,7 +5391,13 @@ let _syncTimer     = null;
 
 // ── AUTH ──
 function openAuthModal()  { document.getElementById('auth-modal').style.display  = 'flex'; }
-function closeAuthModal() { document.getElementById('auth-modal').style.display  = 'none'; }
+function closeAuthModal() {
+  // 若勾選「不再提示」，記錄到 localStorage
+  if (document.getElementById('auth-dont-show')?.checked) {
+    localStorage.setItem('authDontShow', 'true');
+  }
+  document.getElementById('auth-modal').style.display = 'none';
+}
 
 async function signInWithGoogle() {
   const { error } = await _supa.auth.signInWithOAuth({
@@ -4934,7 +5421,15 @@ async function initAuth() {
     await loadProfile();
     renderAuthArea();
     await syncRecordsFromCloud();
+  } else {
+    // 未登入：若沒有「不再提示」，3秒後顯示登入畫面
+    if (!localStorage.getItem('authDontShow')) {
+      setTimeout(() => {
+        if (!currentUser) openAuthModal();
+      }, 3000);
+    }
   }
+
   _supa.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session) {
       currentUser = session.user;
@@ -4947,6 +5442,7 @@ async function initAuth() {
         showToast(`👋 歡迎回來，${currentProfile.nickname}！`);
         renderAuthArea();
         await syncRecordsFromCloud();
+        setTimeout(autoShowDailyInvite, 2000);
       }
     } else if (event === 'SIGNED_OUT') {
       currentUser = null; currentProfile = null; renderAuthArea();
@@ -4994,6 +5490,7 @@ async function saveNickname() {
   renderAuthArea();
   showToast(`✅ 歡迎，${nickname}！`);
   await syncRecordsFromCloud();
+  setTimeout(autoShowDailyInvite, 2000);
 }
 
 function openProfileSettings() {
@@ -5100,7 +5597,12 @@ function renderLeaderboardData(data) {
     const val   = isRate ? `${r.correct_rate}%（${r.total_answered} 題）` : `${r.total_answered} 題（${r.exam_count} 次）`;
     return `<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;margin-bottom:6px;background:${isMe?'#eff6ff':'#f8fafc'};border:${isMe?'2px solid #bfdbfe':'1px solid #e2e8f0'}">
       <span style="font-size:${i<3?'20px':'14px'};font-weight:700;min-width:28px;text-align:center;color:${i<3?'inherit':'#64748b'}">${medals[i]||i+1}</span>
-      <span style="flex:1;font-size:14px;font-weight:${isMe?700:500};color:${isMe?'#1e40af':'#1a202c'}">${r.nickname}${isMe?' （你）':''}</span>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+          <span style="font-size:14px;font-weight:${isMe?700:500};color:${isMe?'#1e40af':'#1a202c'}">${r.nickname}${isMe?' （你）':''}</span>
+          <span style="font-size:11px;padding:1px 7px;background:${getDoctorTitle(r.correct_rate).bg};color:${getDoctorTitle(r.correct_rate).color};border-radius:8px">${getDoctorTitle(r.correct_rate).icon} ${getDoctorTitle(r.correct_rate).name}</span>
+        </div>
+      </div>
       <span style="font-size:13px;color:#64748b;font-family:'JetBrains Mono',monospace">${val}</span>
     </div>`;
   }).join('');
